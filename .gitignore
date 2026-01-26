@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+MIGRATION_TO_GEMINI.md
+ideas.md
+SETUP.md
+CHANGELOG_GEMINI.md
+GEMINI_SETUP.md
+HACKATHON.md
