@@ -22,7 +22,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from agents import RepositoryScoutAgent, IssueMatcherAgent, MentoringAgent
-from evaluators import (
+from opik import (
     RepositoryMatchQualityMetric,
     IssueDifficultyCalibrationMetric,
     MentoringHelpfulnessMetric,

@@ -1,7 +1,7 @@
 from typing import Dict, Any, List
 from datetime import datetime
 from models.schemas import UserProfile, ContributionOutcome, SkillLevel
-from evaluators.opik_wrapper import opik_wrapper
+from opik.opik_wrapper import opik_wrapper
 import google.generativeai as genai
 import os
 import json

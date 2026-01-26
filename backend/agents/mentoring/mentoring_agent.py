@@ -4,7 +4,7 @@ import os
 import json
 from tools.github_tools import GitHubTools
 from models.schemas import UserProfile, MentoringPlan, SkillLevel
-from evaluators.opik_wrapper import opik_wrapper
+from opik.opik_wrapper import opik_wrapper
 
 
 class MentoringAgent:

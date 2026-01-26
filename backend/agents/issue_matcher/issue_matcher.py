@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 from tools.github_tools import GitHubTools
 from models.schemas import UserProfile, Issue, SkillLevel
-from evaluators.opik_wrapper import opik_wrapper
+from opik.opik_wrapper import opik_wrapper
 
 
 class IssueMatcherAgent:
