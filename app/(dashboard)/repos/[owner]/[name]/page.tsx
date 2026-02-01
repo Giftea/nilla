@@ -32,11 +32,15 @@ import {
   Star,
   GitFork,
   CircleDot,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import type { GitHubIssue } from "@/lib/github/api";
 import { CommitDialog } from "@/components/issues/commit-dialog";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function RepoIssuesPage() {
   const params = useParams();
@@ -46,6 +50,7 @@ export default function RepoIssuesPage() {
 
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [labelFilter, setLabelFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<{
     issue: GitHubIssue;
@@ -88,13 +93,15 @@ export default function RepoIssuesPage() {
     queryFn: async () => {
       const labels =
         labelFilter === "all"
-          ? "good first issue,help wanted"
+          ? "help wanted"
           : labelFilter === "good-first-issue"
             ? "good first issue"
-            : "help wanted";
+            : labelFilter === "first-timers-only"
+              ? "first timers only"
+              : "help wanted";
 
       const res = await fetch(
-        `/api/github/issues?owner=${owner}&repo=${name}&labels=${encodeURIComponent(labels)}`
+        `/api/github/issues?owner=${owner}&repo=${name}&labels=${encodeURIComponent(labels)}`,
       );
       if (!res.ok) return [];
       const data: GitHubIssue[] = await res.json();
@@ -113,6 +120,24 @@ export default function RepoIssuesPage() {
       return issue.score.difficulty === difficultyFilter;
     })
     .sort((a, b) => b.score.activityScore - a.score.activityScore);
+
+  // Pagination
+  const totalPages = Math.ceil((filteredIssues?.length || 0) / ITEMS_PER_PAGE);
+  const paginatedIssues = filteredIssues?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when filters change
+  const handleDifficultyChange = (value: string) => {
+    setDifficultyFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleLabelChange = (value: string) => {
+    setLabelFilter(value);
+    setCurrentPage(1);
+  };
 
   const handleCommit = (issue: NonNullable<typeof filteredIssues>[number]) => {
     setSelectedIssue({
@@ -182,17 +207,25 @@ export default function RepoIssuesPage() {
               </div>
               <span className="text-sm font-medium">Filters:</span>
             </div>
-            <Select value={labelFilter} onValueChange={setLabelFilter}>
+            <Select value={labelFilter} onValueChange={handleLabelChange}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Label" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All labels</SelectItem>
-                <SelectItem value="good-first-issue">Good first issue</SelectItem>
+                <SelectItem value="good-first-issue">
+                  Good first issue
+                </SelectItem>
+                 <SelectItem value="first-timers-only">
+                  First timers only
+                </SelectItem>
                 <SelectItem value="help-wanted">Help wanted</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+            <Select
+              value={difficultyFilter}
+              onValueChange={handleDifficultyChange}
+            >
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
@@ -222,9 +255,9 @@ export default function RepoIssuesPage() {
             </Card>
           ))}
         </div>
-      ) : filteredIssues && filteredIssues.length > 0 ? (
+      ) : paginatedIssues && paginatedIssues.length > 0 ? (
         <div className="space-y-4">
-          {filteredIssues.map((issue) => (
+          {paginatedIssues.map((issue) => (
             <Card
               key={issue.id}
               className="border-0 shadow-lg shadow-violet-500/5 hover:shadow-xl hover:shadow-violet-500/10 transition-all"
@@ -307,13 +340,49 @@ export default function RepoIssuesPage() {
                       }
                     >
                       <Target className="mr-1.5 h-3.5 w-3.5" />
-                      {activeCommitments?.has(issue.id) ? "Committed" : "Commit"}
+                      {activeCommitments?.has(issue.id)
+                        ? "Committed"
+                        : "Commit"}
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                {Math.min(currentPage * ITEMS_PER_PAGE, filteredIssues?.length || 0)} of{" "}
+                {filteredIssues?.length || 0} issues
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <span className="text-sm text-muted-foreground px-2">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <Card>

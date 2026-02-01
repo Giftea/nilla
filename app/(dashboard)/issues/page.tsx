@@ -88,13 +88,15 @@ export default function IssuesPage() {
       const issuePromises = reposToFetch.map(async (repo) => {
         const labels =
           labelFilter === "all"
-            ? "good first issue,help wanted"
+            ? "help wanted"
             : labelFilter === "good-first-issue"
               ? "good first issue"
-              : "help wanted";
+              : labelFilter === "first-timers-only"
+                ? "first timers only"
+                : "help wanted";
 
         const res = await fetch(
-          `/api/github/issues?owner=${repo.owner}&repo=${repo.name}&labels=${encodeURIComponent(labels)}`
+          `/api/github/issues?owner=${repo.owner}&repo=${repo.name}&labels=${encodeURIComponent(labels)}`,
         );
         if (!res.ok) return [];
         const data: GitHubIssue[] = await res.json();
@@ -128,14 +130,15 @@ export default function IssuesPage() {
   const totalPages = Math.ceil(totalIssues / ITEMS_PER_PAGE);
   const paginatedIssues = filteredIssues?.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   // Reset page when filters change
-  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
-    setter(value);
-    setCurrentPage(1);
-  };
+  const handleFilterChange =
+    (setter: (value: string) => void) => (value: string) => {
+      setter(value);
+      setCurrentPage(1);
+    };
 
   const handleCommit = (issue: NonNullable<typeof filteredIssues>[number]) => {
     setSelectedIssue({
@@ -171,7 +174,10 @@ export default function IssuesPage() {
               </div>
               <span className="text-sm font-medium">Filters:</span>
             </div>
-            <Select value={selectedRepo} onValueChange={handleFilterChange(setSelectedRepo)}>
+            <Select
+              value={selectedRepo}
+              onValueChange={handleFilterChange(setSelectedRepo)}
+            >
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select repository" />
               </SelectTrigger>
@@ -184,17 +190,28 @@ export default function IssuesPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={labelFilter} onValueChange={handleFilterChange(setLabelFilter)}>
+            <Select
+              value={labelFilter}
+              onValueChange={handleFilterChange(setLabelFilter)}
+            >
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Label" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All labels</SelectItem>
-                <SelectItem value="good-first-issue">Good first issue</SelectItem>
+                <SelectItem value="good-first-issue">
+                  Good first issue
+                </SelectItem>
+                 <SelectItem value="first-timers-only">
+                  First timers only
+                </SelectItem>
                 <SelectItem value="help-wanted">Help wanted</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={difficultyFilter} onValueChange={handleFilterChange(setDifficultyFilter)}>
+            <Select
+              value={difficultyFilter}
+              onValueChange={handleFilterChange(setDifficultyFilter)}
+            >
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
@@ -217,7 +234,9 @@ export default function IssuesPage() {
               No repositories tracked yet.
             </p>
             <Link href="/repos">
-              <Button className="mt-4 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25">Add repositories</Button>
+              <Button className="mt-4 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25">
+                Add repositories
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -238,7 +257,10 @@ export default function IssuesPage() {
       ) : paginatedIssues && paginatedIssues.length > 0 ? (
         <div className="space-y-4">
           {paginatedIssues.map((issue) => (
-            <Card key={`${issue.repoFullName}-${issue.id}`} className="border-0 shadow-lg shadow-violet-500/5 hover:shadow-xl hover:shadow-violet-500/10 transition-all">
+            <Card
+              key={`${issue.repoFullName}-${issue.id}`}
+              className="border-0 shadow-lg shadow-violet-500/5 hover:shadow-xl hover:shadow-violet-500/10 transition-all"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -310,10 +332,16 @@ export default function IssuesPage() {
                       size="sm"
                       onClick={() => handleCommit(issue)}
                       disabled={activeCommitments?.has(issue.id)}
-                      className={activeCommitments?.has(issue.id) ? "" : "bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25"}
+                      className={
+                        activeCommitments?.has(issue.id)
+                          ? ""
+                          : "bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25"
+                      }
                     >
                       <Target className="mr-1.5 h-3.5 w-3.5" />
-                      {activeCommitments?.has(issue.id) ? "Committed" : "Commit"}
+                      {activeCommitments?.has(issue.id)
+                        ? "Committed"
+                        : "Commit"}
                     </Button>
                   </div>
                 </div>
@@ -325,7 +353,9 @@ export default function IssuesPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">
               <p className="text-sm text-muted-foreground">
-                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalIssues)} of {totalIssues} issues
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                {Math.min(currentPage * ITEMS_PER_PAGE, totalIssues)} of{" "}
+                {totalIssues} issues
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -348,12 +378,18 @@ export default function IssuesPage() {
                     .map((page, index, array) => (
                       <span key={page} className="flex items-center">
                         {index > 0 && array[index - 1] !== page - 1 && (
-                          <span className="px-2 text-muted-foreground">...</span>
+                          <span className="px-2 text-muted-foreground">
+                            ...
+                          </span>
                         )}
                         <Button
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
-                          className={currentPage === page ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0" : ""}
+                          className={
+                            currentPage === page
+                              ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0"
+                              : ""
+                          }
                           onClick={() => setCurrentPage(page)}
                         >
                           {page}
@@ -364,7 +400,9 @@ export default function IssuesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage === totalPages}
                 >
                   Next
