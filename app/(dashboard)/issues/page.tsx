@@ -27,6 +27,8 @@ import {
   ExternalLink,
   Filter,
   Target,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -38,10 +40,13 @@ export default function IssuesPage() {
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [labelFilter, setLabelFilter] = useState<string>("all");
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedIssue, setSelectedIssue] = useState<{
     issue: GitHubIssue;
     repoFullName: string;
   } | null>(null);
+
+  const ITEMS_PER_PAGE = 10;
 
   // Fetch tracked repos
   const { data: trackedRepos } = useQuery({
@@ -118,6 +123,20 @@ export default function IssuesPage() {
     })
     .sort((a, b) => b.score.activityScore - a.score.activityScore);
 
+  // Pagination
+  const totalIssues = filteredIssues?.length || 0;
+  const totalPages = Math.ceil(totalIssues / ITEMS_PER_PAGE);
+  const paginatedIssues = filteredIssues?.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
   const handleCommit = (issue: NonNullable<typeof filteredIssues>[number]) => {
     setSelectedIssue({
       issue,
@@ -152,7 +171,7 @@ export default function IssuesPage() {
               </div>
               <span className="text-sm font-medium">Filters:</span>
             </div>
-            <Select value={selectedRepo} onValueChange={setSelectedRepo}>
+            <Select value={selectedRepo} onValueChange={handleFilterChange(setSelectedRepo)}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select repository" />
               </SelectTrigger>
@@ -165,7 +184,7 @@ export default function IssuesPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={labelFilter} onValueChange={setLabelFilter}>
+            <Select value={labelFilter} onValueChange={handleFilterChange(setLabelFilter)}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Label" />
               </SelectTrigger>
@@ -175,7 +194,7 @@ export default function IssuesPage() {
                 <SelectItem value="help-wanted">Help wanted</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+            <Select value={difficultyFilter} onValueChange={handleFilterChange(setDifficultyFilter)}>
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
@@ -216,9 +235,9 @@ export default function IssuesPage() {
             </Card>
           ))}
         </div>
-      ) : filteredIssues && filteredIssues.length > 0 ? (
+      ) : paginatedIssues && paginatedIssues.length > 0 ? (
         <div className="space-y-4">
-          {filteredIssues.map((issue) => (
+          {paginatedIssues.map((issue) => (
             <Card key={`${issue.repoFullName}-${issue.id}`} className="border-0 shadow-lg shadow-violet-500/5 hover:shadow-xl hover:shadow-violet-500/10 transition-all">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-4">
@@ -301,6 +320,59 @@ export default function IssuesPage() {
               </CardContent>
             </Card>
           ))}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalIssues)} of {totalIssues} issues
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      if (totalPages <= 5) return true;
+                      if (page === 1 || page === totalPages) return true;
+                      if (Math.abs(page - currentPage) <= 1) return true;
+                      return false;
+                    })
+                    .map((page, index, array) => (
+                      <span key={page} className="flex items-center">
+                        {index > 0 && array[index - 1] !== page - 1 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <Button
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          className={currentPage === page ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0" : ""}
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      </span>
+                    ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <Card>

@@ -5,12 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Zap,
   Flame,
   Trophy,
   Target,
   GitPullRequest,
-  Star,
   Sparkles,
   TrendingUp,
   Award,
@@ -19,6 +17,7 @@ import {
 import { BADGES } from "@/lib/constants/badges";
 import { xpToNextLevel } from "@/lib/constants/xp-values";
 import { cn } from "@/lib/utils";
+import { XpHistory } from "@/components/profile/xp-history";
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -48,7 +47,7 @@ export default async function ProfilePage() {
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(10),
+      .limit(100),
   ]);
 
   const levelProgress = xpToNextLevel(userStats?.total_xp || 0);
@@ -276,66 +275,7 @@ export default async function ProfilePage() {
       </Card>
 
       {/* XP History */}
-      <Card className="border-0 shadow-lg shadow-violet-500/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25">
-              <Zap className="h-5 w-5" />
-            </div>
-            <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-              Recent XP Earned
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentXp && recentXp.length > 0 ? (
-            <div className="space-y-3">
-              {recentXp.map((xp, index) => (
-                <div
-                  key={xp.id}
-                  className="flex items-center justify-between rounded-xl border border-violet-500/10 bg-gradient-to-r from-violet-500/5 to-transparent p-4 transition-all hover:border-violet-500/20 hover:shadow-md"
-                  style={{
-                    animationDelay: `${index * 50}ms`,
-                  }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20">
-                      <Star className="h-5 w-5 text-violet-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">
-                        {xp.description || xp.action.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(xp.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0 shadow-md shadow-violet-500/25">
-                    +{xp.xp_amount} XP
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 mb-4">
-                <Zap className="h-8 w-8 text-violet-500" />
-              </div>
-              <p className="text-muted-foreground font-medium">
-                No XP earned yet
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Start by committing to an issue to earn your first XP!
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <XpHistory transactions={recentXp || []} />
     </div>
   );
 }
