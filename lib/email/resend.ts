@@ -1,6 +1,14 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-load the Resend client to avoid build-time errors when env vars aren't set
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
 
 export async function sendReminderEmail({
   to,
@@ -24,7 +32,7 @@ export async function sendReminderEmail({
       ? `Need help with "${issueTitle}"?`
       : `${daysRemaining} day${daysRemaining !== 1 ? "s" : ""} left for "${issueTitle}"`;
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResendClient().emails.send({
     from: "Nilla <noreply@nilla.app>",
     to: [to],
     subject,
