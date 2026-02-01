@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getRepoIssues, GitHubAPIError } from "@/lib/github/api";
+import { getRepoIssues, GitHubAPIError, getGitHubToken } from "@/lib/github/api";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -10,6 +10,15 @@ export async function GET(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check if GitHub token is available
+  const token = await getGitHubToken();
+  if (!token) {
+    return NextResponse.json(
+      { error: "GitHub session expired. Please log out and log in again." },
+      { status: 401 }
+    );
   }
 
   const owner = request.nextUrl.searchParams.get("owner");
@@ -39,6 +48,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(filteredIssues);
   } catch (error) {
     if (error instanceof GitHubAPIError) {
+      // If 403, it's likely token expiration or rate limiting
+      if (error.status === 403) {
+        return NextResponse.json(
+          { error: "GitHub access denied. Your session may have expired. Please log out and log in again." },
+          { status: 403 }
+        );
+      }
       return NextResponse.json(
         { error: error.message },
         { status: error.status }

@@ -2,14 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { GitBranch } from "lucide-react";
+import { Github, Sparkles, Target, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -30,58 +23,159 @@ function LoginContent() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/50 px-4">
-      <Link href="/" className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <GitBranch className="h-6 w-6" />
+    <div className="flex min-h-screen">
+      {/* Left side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-violet-600 via-indigo-600 to-cyan-500 p-12 flex-col justify-between relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-white/10 to-transparent rounded-full blur-3xl" />
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-white/5 rounded-full blur-2xl animate-pulse" />
         </div>
-        <span className="text-2xl font-bold">Nilla</span>
-      </Link>
 
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to Nilla</CardTitle>
-          <CardDescription>
-            Sign in with GitHub to start your open source journey
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <div className="relative z-10">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm text-white shadow-lg">
+              <span className="text-2xl">🌱</span>
+            </div>
+            <span className="text-3xl font-bold text-white">Nilla</span>
+          </Link>
+        </div>
+
+        <div className="relative z-10 space-y-8">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-4">
+              Start your open source journey today
+            </h1>
+            <p className="text-xl text-white/80">
+              Find beginner-friendly issues, track your commitments, and grow as a developer.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 text-white/90">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
+                <Target className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium">Discover Issues</p>
+                <p className="text-sm text-white/70">Find curated beginner-friendly issues</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-white/90">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
+                <Zap className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium">Stay Accountable</p>
+                <p className="text-sm text-white/70">Commit to issues and track your progress</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-white/90">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-medium">Join the Community</p>
+                <p className="text-sm text-white/70">Connect with fellow open source contributors</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10">
+          <p className="text-white/60 text-sm">
+            Trusted by developers starting their open source journey
+          </p>
+        </div>
+      </div>
+
+      {/* Right side - Login form */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-background via-violet-500/5 to-indigo-500/5">
+        {/* Mobile logo */}
+        <Link href="/" className="lg:hidden mb-12 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25">
+            <span className="text-2xl">🌱</span>
+          </div>
+          <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+            Nilla
+          </span>
+        </Link>
+
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 text-violet-600 text-sm font-medium mb-4">
+              <Sparkles className="h-4 w-4" />
+              Free to use
+            </div>
+            <h2 className="text-3xl font-bold">Welcome back</h2>
+            <p className="text-muted-foreground">
+              Sign in to continue your open source journey
+            </p>
+          </div>
+
           {error && (
-            <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+            <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
               Authentication failed. Please try again.
             </div>
           )}
-          <Button
-            onClick={handleGitHubLogin}
-            className="w-full gap-2"
-            size="lg"
-          >
-            <svg
-              className="h-5 w-5"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Sign in with GitHub
-          </Button>
-          <p className="text-center text-xs text-muted-foreground">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
-        </CardContent>
-      </Card>
 
-      <p className="mt-8 text-sm text-muted-foreground">
-        New to open source?{" "}
-        <Link href="/" className="text-primary hover:underline">
-          Learn more about Nilla
-        </Link>
-      </p>
+          <div className="space-y-4">
+            <Button
+              onClick={handleGitHubLogin}
+              className="w-full gap-3 h-12 text-base bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30 hover:scale-[1.02]"
+              size="lg"
+            >
+              <Github className="h-5 w-5" />
+              Continue with GitHub
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Secure authentication
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 text-center text-sm">
+              <div className="p-3 rounded-xl bg-muted/50">
+                <p className="font-semibold text-foreground">100%</p>
+                <p className="text-xs text-muted-foreground">Free</p>
+              </div>
+              <div className="p-3 rounded-xl bg-muted/50">
+                <p className="font-semibold text-foreground">OAuth</p>
+                <p className="text-xs text-muted-foreground">Secure</p>
+              </div>
+              <div className="p-3 rounded-xl bg-muted/50">
+                <p className="font-semibold text-foreground">No spam</p>
+                <p className="text-xs text-muted-foreground">Promise</p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground">
+            By signing in, you agree to our{" "}
+            <Link href="/terms" className="text-violet-600 hover:underline">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="text-violet-600 hover:underline">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
+
+        <p className="mt-12 text-sm text-muted-foreground">
+          New to open source?{" "}
+          <Link href="/" className="text-violet-600 hover:underline font-medium">
+            Learn how Nilla can help
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
@@ -90,8 +184,11 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          Loading...
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-violet-500/5 to-indigo-500/5">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
+            <span className="text-muted-foreground">Loading...</span>
+          </div>
         </div>
       }
     >
