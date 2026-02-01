@@ -1,0 +1,32 @@
+export const LANGUAGES = [
+  { value: "javascript", label: "JavaScript" },
+  { value: "typescript", label: "TypeScript" },
+  { value: "python", label: "Python" },
+  { value: "java", label: "Java" },
+  { value: "go", label: "Go" },
+  { value: "rust", label: "Rust" },
+  { value: "cpp", label: "C++" },
+  { value: "c", label: "C" },
+  { value: "csharp", label: "C#" },
+  { value: "ruby", label: "Ruby" },
+  { value: "php", label: "PHP" },
+  { value: "swift", label: "Swift" },
+  { value: "kotlin", label: "Kotlin" },
+  { value: "scala", label: "Scala" },
+  { value: "elixir", label: "Elixir" },
+] as const;
+
+export const TOPICS = [
+  { value: "web", label: "Web Development" },
+  { value: "mobile", label: "Mobile Development" },
+  { value: "cli", label: "CLI Tools" },
+  { value: "devops", label: "DevOps & Infrastructure" },
+  { value: "ml", label: "Machine Learning / AI" },
+  { value: "data", label: "Data Science" },
+  { value: "security", label: "Security" },
+  { value: "gaming", label: "Game Development" },
+  { value: "blockchain", label: "Blockchain / Web3" },
+  { value: "iot", label: "IoT / Embedded" },
+  { value: "documentation", label: "Documentation" },
+  { value: "testing", label: "Testing" },
+] as const;

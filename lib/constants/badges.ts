@@ -1,0 +1,88 @@
+export const BADGES = {
+  first_commit: {
+    id: "first_commit",
+    name: "First Steps",
+    description: "Created your first commitment",
+    icon: "🌱",
+    color: "bg-green-100 text-green-800",
+  },
+  first_pr: {
+    id: "first_pr",
+    name: "Pull Request Pioneer",
+    description: "Opened your first pull request",
+    icon: "🚀",
+    color: "bg-blue-100 text-blue-800",
+  },
+  first_merged_pr: {
+    id: "first_merged_pr",
+    name: "Merged!",
+    description: "Got your first PR merged",
+    icon: "🎉",
+    color: "bg-purple-100 text-purple-800",
+  },
+  streak_3: {
+    id: "streak_3",
+    name: "Getting Started",
+    description: "3-day contribution streak",
+    icon: "🔥",
+    color: "bg-orange-100 text-orange-800",
+  },
+  streak_7: {
+    id: "streak_7",
+    name: "Week Warrior",
+    description: "7-day contribution streak",
+    icon: "⚡",
+    color: "bg-yellow-100 text-yellow-800",
+  },
+  streak_14: {
+    id: "streak_14",
+    name: "Consistent Contributor",
+    description: "14-day contribution streak",
+    icon: "💪",
+    color: "bg-red-100 text-red-800",
+  },
+  streak_30: {
+    id: "streak_30",
+    name: "Open Source Hero",
+    description: "30-day contribution streak",
+    icon: "🏆",
+    color: "bg-amber-100 text-amber-800",
+  },
+  commitment_keeper: {
+    id: "commitment_keeper",
+    name: "Commitment Keeper",
+    description: "Completed 5 commitments on time",
+    icon: "✅",
+    color: "bg-emerald-100 text-emerald-800",
+  },
+  quick_starter: {
+    id: "quick_starter",
+    name: "Quick Starter",
+    description: "Completed a commitment in under 3 days",
+    icon: "⚡",
+    color: "bg-cyan-100 text-cyan-800",
+  },
+  helping_hand: {
+    id: "helping_hand",
+    name: "Helping Hand",
+    description: "Contributed to 3 different repositories",
+    icon: "🤝",
+    color: "bg-pink-100 text-pink-800",
+  },
+  explorer: {
+    id: "explorer",
+    name: "Explorer",
+    description: "Added 10 repositories to track",
+    icon: "🗺️",
+    color: "bg-indigo-100 text-indigo-800",
+  },
+  polyglot: {
+    id: "polyglot",
+    name: "Polyglot",
+    description: "Contributed to repos in 3 different languages",
+    icon: "🌐",
+    color: "bg-violet-100 text-violet-800",
+  },
+} as const;
+
+export type BadgeType = keyof typeof BADGES;
