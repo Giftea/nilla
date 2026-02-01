@@ -4,18 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { GOALS, type GoalType } from "@/lib/constants/goals";
 import { LANGUAGES, TOPICS } from "@/lib/constants/languages";
-import { GitBranch, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Loader2,
+  Check,
+  Sparkles,
+  Code2,
+  Target,
+} from "lucide-react";
 import { addDays } from "date-fns";
 
 type ExperienceLevel = "beginner" | "intermediate" | "advanced";
@@ -26,18 +26,39 @@ const EXPERIENCE_LEVELS = [
     label: "Beginner",
     description: "New to programming or open source contributions",
     emoji: "🌱",
+    gradient: "from-green-400 to-emerald-500",
   },
   {
     value: "intermediate" as const,
     label: "Intermediate",
     description: "Comfortable with coding, but new to open source",
     emoji: "🌿",
+    gradient: "from-blue-400 to-cyan-500",
   },
   {
     value: "advanced" as const,
     label: "Advanced",
     description: "Experienced developer looking to contribute more",
     emoji: "🌳",
+    gradient: "from-violet-400 to-purple-500",
+  },
+];
+
+const STEP_INFO = [
+  {
+    title: "What's your experience level?",
+    subtitle: "This helps us recommend appropriate issues for you",
+    icon: Sparkles,
+  },
+  {
+    title: "What's your preferred stack?",
+    subtitle: "Select the languages and topics you're interested in",
+    icon: Code2,
+  },
+  {
+    title: "What's your goal?",
+    subtitle: "Choose what you want to achieve",
+    icon: Target,
   },
 ];
 
@@ -54,7 +75,6 @@ export default function OnboardingPage() {
   const [selectedGoal, setSelectedGoal] = useState<GoalType | null>(null);
 
   const totalSteps = 3;
-  const progress = (step / totalSteps) * 100;
 
   const canProceed = () => {
     switch (step) {
@@ -143,179 +163,280 @@ export default function OnboardingPage() {
     }
   };
 
+  const currentStepInfo = STEP_INFO[step - 1];
+  const StepIcon = currentStepInfo.icon;
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/50 px-4 py-8">
-      <div className="mb-8 flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <GitBranch className="h-6 w-6" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-violet-500/5 to-indigo-500/5">
+      {/* Header */}
+      <div className="border-b bg-background/80 backdrop-blur-sm">
+        <div className="mx-auto max-w-4xl px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25">
+                <span className="text-xl">🌱</span>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+                Nilla
+              </span>
+            </div>
+
+            {/* Step indicators */}
+            <div className="flex items-center gap-2">
+              {[1, 2, 3].map((s) => (
+                <div key={s} className="flex items-center">
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-all",
+                      s < step
+                        ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white"
+                        : s === step
+                          ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25"
+                          : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {s < step ? <Check className="h-4 w-4" /> : s}
+                  </div>
+                  {s < 3 && (
+                    <div
+                      className={cn(
+                        "mx-2 h-0.5 w-8 rounded-full transition-all",
+                        s < step
+                          ? "bg-gradient-to-r from-green-400 to-emerald-500"
+                          : "bg-muted"
+                      )}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <span className="text-2xl font-bold">Nilla</span>
       </div>
 
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <div className="mb-4">
-            <Progress value={progress} className="h-2" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              Step {step} of {totalSteps}
-            </p>
+      {/* Content */}
+      <div className="mx-auto max-w-4xl px-4 py-12">
+        {/* Step Header */}
+        <div className="mb-10 text-center">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-xl shadow-violet-500/25 mb-6">
+            <StepIcon className="h-8 w-8" />
           </div>
-          {step === 1 && (
-            <>
-              <CardTitle>What&apos;s your experience level?</CardTitle>
-              <CardDescription>
-                This helps us recommend appropriate issues for you
-              </CardDescription>
-            </>
-          )}
-          {step === 2 && (
-            <>
-              <CardTitle>What&apos;s your preferred stack?</CardTitle>
-              <CardDescription>
-                Select the languages and topics you&apos;re interested in
-              </CardDescription>
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <CardTitle>What&apos;s your goal?</CardTitle>
-              <CardDescription>
-                Choose what you want to achieve
-              </CardDescription>
-            </>
-          )}
-        </CardHeader>
-        <CardContent>
-          {/* Step 1: Experience Level */}
-          {step === 1 && (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {EXPERIENCE_LEVELS.map((level) => (
-                <button
-                  key={level.value}
-                  onClick={() => setExperienceLevel(level.value)}
-                  className={cn(
-                    "flex flex-col items-center rounded-lg border-2 p-6 text-center transition-all hover:border-primary/50",
-                    experienceLevel === level.value
-                      ? "border-primary bg-primary/5"
-                      : "border-border"
-                  )}
-                >
-                  <span className="mb-2 text-4xl">{level.emoji}</span>
-                  <span className="font-semibold">{level.label}</span>
-                  <span className="mt-1 text-xs text-muted-foreground">
-                    {level.description}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          <h1 className="text-3xl font-bold mb-2">{currentStepInfo.title}</h1>
+          <p className="text-muted-foreground text-lg">
+            {currentStepInfo.subtitle}
+          </p>
+        </div>
 
-          {/* Step 2: Languages & Topics */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="mb-3 font-medium">Programming Languages</h3>
-                <div className="flex flex-wrap gap-2">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.value}
-                      onClick={() => toggleLanguage(lang.value)}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition-all",
-                        selectedLanguages.includes(lang.value)
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      {lang.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="mb-3 font-medium">Topics (optional)</h3>
-                <div className="flex flex-wrap gap-2">
-                  {TOPICS.map((topic) => (
-                    <button
-                      key={topic.value}
-                      onClick={() => toggleTopic(topic.value)}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition-all",
-                        selectedTopics.includes(topic.value)
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      {topic.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Goal Selection */}
-          {step === 3 && (
-            <div className="grid gap-4">
-              {Object.values(GOALS).map((goal) => (
-                <button
-                  key={goal.id}
-                  onClick={() => setSelectedGoal(goal.id as GoalType)}
-                  className={cn(
-                    "flex items-start gap-4 rounded-lg border-2 p-4 text-left transition-all hover:border-primary/50",
-                    selectedGoal === goal.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border"
-                  )}
-                >
-                  <span className="text-3xl">{goal.emoji}</span>
-                  <div>
-                    <span className="font-semibold">{goal.title}</span>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {goal.description}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Navigation */}
-          <div className="mt-8 flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={step === 1}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back
-            </Button>
-            {step < totalSteps ? (
-              <Button onClick={handleNext} disabled={!canProceed()}>
-                Next
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleComplete}
-                disabled={!canProceed() || isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    Get Started
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </>
+        {/* Step 1: Experience Level */}
+        {step === 1 && (
+          <div className="grid gap-4 sm:grid-cols-3">
+            {EXPERIENCE_LEVELS.map((level) => (
+              <button
+                key={level.value}
+                onClick={() => setExperienceLevel(level.value)}
+                className={cn(
+                  "group relative flex flex-col items-center rounded-2xl border-2 p-8 text-center transition-all duration-300",
+                  experienceLevel === level.value
+                    ? "border-violet-500 bg-gradient-to-b from-violet-500/10 to-indigo-500/10 shadow-xl shadow-violet-500/10"
+                    : "border-border hover:border-violet-500/50 hover:shadow-lg"
                 )}
-              </Button>
+              >
+                {experienceLevel === level.value && (
+                  <div className="absolute -top-3 -right-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg">
+                      <Check className="h-4 w-4" />
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    "mb-4 flex h-20 w-20 items-center justify-center rounded-2xl text-5xl transition-transform group-hover:scale-110",
+                    `bg-gradient-to-br ${level.gradient} bg-opacity-10`
+                  )}
+                  style={{
+                    background: `linear-gradient(135deg, ${level.gradient.includes("green") ? "rgb(74 222 128 / 0.2)" : level.gradient.includes("blue") ? "rgb(96 165 250 / 0.2)" : "rgb(167 139 250 / 0.2)"}, transparent)`,
+                  }}
+                >
+                  {level.emoji}
+                </div>
+                <span className="text-lg font-semibold mb-2">{level.label}</span>
+                <span className="text-sm text-muted-foreground leading-relaxed">
+                  {level.description}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Step 2: Languages & Topics */}
+        {step === 2 && (
+          <div className="space-y-8">
+            <div className="rounded-2xl border bg-card p-6">
+              <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
+                <Code2 className="h-5 w-5 text-violet-500" />
+                Programming Languages
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.value}
+                    onClick={() => toggleLanguage(lang.value)}
+                    className={cn(
+                      "relative rounded-xl border-2 px-5 py-2.5 text-sm font-medium transition-all duration-200",
+                      selectedLanguages.includes(lang.value)
+                        ? "border-violet-500 bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25"
+                        : "border-border hover:border-violet-500/50 hover:bg-violet-500/5"
+                    )}
+                  >
+                    {lang.label}
+                    {selectedLanguages.includes(lang.value) && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-violet-600 shadow">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-card p-6">
+              <h3 className="mb-4 text-lg font-semibold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                Topics
+                <span className="text-sm font-normal text-muted-foreground">
+                  (optional)
+                </span>
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {TOPICS.map((topic) => (
+                  <button
+                    key={topic.value}
+                    onClick={() => toggleTopic(topic.value)}
+                    className={cn(
+                      "relative rounded-xl border-2 px-5 py-2.5 text-sm font-medium transition-all duration-200",
+                      selectedTopics.includes(topic.value)
+                        ? "border-amber-500 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/25"
+                        : "border-border hover:border-amber-500/50 hover:bg-amber-500/5"
+                    )}
+                  >
+                    {topic.label}
+                    {selectedTopics.includes(topic.value) && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-amber-600 shadow">
+                        <Check className="h-3 w-3" />
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {selectedLanguages.length > 0 && (
+              <div className="rounded-xl bg-gradient-to-r from-violet-500/10 to-indigo-500/10 border border-violet-500/20 p-4">
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    {selectedLanguages.length}
+                  </span>{" "}
+                  language{selectedLanguages.length !== 1 ? "s" : ""} selected
+                  {selectedTopics.length > 0 && (
+                    <>
+                      {" "}
+                      and{" "}
+                      <span className="font-medium text-foreground">
+                        {selectedTopics.length}
+                      </span>{" "}
+                      topic{selectedTopics.length !== 1 ? "s" : ""}
+                    </>
+                  )}
+                </p>
+              </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Step 3: Goal Selection */}
+        {step === 3 && (
+          <div className="grid gap-4">
+            {Object.values(GOALS).map((goal) => (
+              <button
+                key={goal.id}
+                onClick={() => setSelectedGoal(goal.id as GoalType)}
+                className={cn(
+                  "group relative flex items-center gap-6 rounded-2xl border-2 p-6 text-left transition-all duration-300",
+                  selectedGoal === goal.id
+                    ? "border-violet-500 bg-gradient-to-r from-violet-500/10 to-indigo-500/10 shadow-xl shadow-violet-500/10"
+                    : "border-border hover:border-violet-500/50 hover:shadow-lg"
+                )}
+              >
+                {selectedGoal === goal.id && (
+                  <div className="absolute -top-3 -right-3">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg">
+                      <Check className="h-4 w-4" />
+                    </div>
+                  </div>
+                )}
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 text-4xl transition-transform group-hover:scale-110">
+                  {goal.emoji}
+                </div>
+                <div className="flex-1">
+                  <span className="text-lg font-semibold">{goal.title}</span>
+                  <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                    {goal.description}
+                  </p>
+                  {goal.targetDays && (
+                    <p className="mt-2 text-xs text-violet-600 font-medium">
+                      Target: {goal.targetDays} days
+                    </p>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="mt-10 flex justify-between">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleBack}
+            disabled={step === 1}
+            className="px-6"
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+          {step < totalSteps ? (
+            <Button
+              size="lg"
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className="px-8 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30"
+            >
+              Continue
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              size="lg"
+              onClick={handleComplete}
+              disabled={!canProceed() || isLoading}
+              className="px-8 bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-lg shadow-violet-500/25 transition-all hover:shadow-xl hover:shadow-violet-500/30"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                <>
+                  Get Started
+                  <Sparkles className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
