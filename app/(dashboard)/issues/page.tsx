@@ -359,22 +359,22 @@ export default function IssuesPage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
-              <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
+            <div className="flex items-center justify-center sm:justify-between gap-2 pt-4 w-full">
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground">
                 {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
                 {Math.min(currentPage * ITEMS_PER_PAGE, totalIssues)} of{" "}
                 {totalIssues}
               </p>
-              <div className="flex items-center gap-2 order-1 sm:order-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8"
+                  className="h-8 w-8 sm:w-auto p-0 sm:px-3"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-1">Previous</span>
+                  <span className="hidden sm:inline ml-1">Prev</span>
                 </Button>
                 <div className="hidden sm:flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -387,18 +387,18 @@ export default function IssuesPage() {
                     .map((page, index, array) => (
                       <span key={page} className="flex items-center">
                         {index > 0 && array[index - 1] !== page - 1 && (
-                          <span className="px-2 text-muted-foreground">
+                          <span className="px-1 text-muted-foreground">
                             ...
                           </span>
                         )}
                         <Button
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
-                          className={
+                          className={`h-8 w-8 p-0 ${
                             currentPage === page
                               ? "bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0"
                               : ""
-                          }
+                          }`}
                           onClick={() => setCurrentPage(page)}
                         >
                           {page}
@@ -406,13 +406,13 @@ export default function IssuesPage() {
                       </span>
                     ))}
                 </div>
-                <span className="sm:hidden text-sm text-muted-foreground px-2">
+                <span className="sm:hidden text-xs text-muted-foreground px-2 whitespace-nowrap">
                   {currentPage} / {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8"
+                  className="h-8 w-8 sm:w-auto p-0 sm:px-3"
                   onClick={() =>
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }

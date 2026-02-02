@@ -356,35 +356,35 @@ export default function CommitmentsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-cyan-500/10 border border-violet-500/20 p-6">
-        <h1 className="text-2xl font-bold flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25">
-            <Target className="h-5 w-5" />
+    <div className="space-y-4 sm:space-y-6">
+      <div className="rounded-2xl bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-cyan-500/10 border border-violet-500/20 p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
             My Commitments
           </span>
         </h1>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
           Track your progress on issues you&apos;ve committed to
         </p>
       </div>
 
       <Tabs defaultValue="active">
-        <TabsList className="bg-violet-500/10 border border-violet-500/20">
-          <TabsTrigger value="active" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">
+        <TabsList className="bg-violet-500/10 border border-violet-500/20 w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
+          <TabsTrigger value="active" className="text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">
             Active ({activeCommitments?.length || 0})
           </TabsTrigger>
-          <TabsTrigger value="completed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white">
-            Completed ({completedCommitments?.length || 0})
+          <TabsTrigger value="completed" className="text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white">
+            Done ({completedCommitments?.length || 0})
           </TabsTrigger>
-          <TabsTrigger value="archived" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-gray-600 data-[state=active]:text-white">
+          <TabsTrigger value="archived" className="text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-gray-600 data-[state=active]:text-white">
             Archived ({abandonedCommitments?.length || 0})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="active" className="mt-6 space-y-4">
+        <TabsContent value="active" className="mt-4 sm:mt-6 space-y-4">
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2].map((i) => (
@@ -408,46 +408,46 @@ export default function CommitmentsPage() {
 
               return (
                 <Card key={commitment.id} className="border-0 shadow-lg shadow-violet-500/5 hover:shadow-xl hover:shadow-violet-500/10 transition-all">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-4">
+                  <CardHeader className="pb-2 sm:pb-3 p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg leading-tight">
+                        <CardTitle className="text-sm sm:text-lg leading-tight">
                           <a
                             href={commitment.issue_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="hover:underline"
+                            className="hover:underline line-clamp-2"
                           >
                             {commitment.issue_title}
                           </a>
                         </CardTitle>
-                        <CardDescription className="mt-1">
+                        <CardDescription className="mt-1 text-xs sm:text-sm">
                           {commitment.github_repo_full_name} #
                           {commitment.issue_number}
                         </CardDescription>
                       </div>
-                      <Badge variant={deadlineInfo.variant}>
+                      <Badge variant={deadlineInfo.variant} className="self-start text-xs shrink-0">
                         <Clock className="mr-1 h-3 w-3" />
                         {deadlineInfo.isOverdue
                           ? `${deadlineInfo.daysLeft}d overdue`
-                          : `${deadlineInfo.daysLeft}d left`}
+                          : `${deadlineInfo.daysLeft}d`}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
                     {/* Progress Checklist */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center justify-between text-xs sm:text-sm">
                         <span className="font-medium">Progress</span>
                         <span className="text-muted-foreground">
-                          {progressCount} / {PROGRESS_STEPS.length} steps
+                          {progressCount} / {PROGRESS_STEPS.length}
                         </span>
                       </div>
-                      <div className="grid gap-3">
+                      <div className="grid gap-2 sm:gap-3">
                         {PROGRESS_STEPS.map((step) => (
                           <div
                             key={step.key}
-                            className="flex items-center gap-3"
+                            className="flex items-center gap-2 sm:gap-3"
                           >
                             <Checkbox
                               id={`${commitment.id}-${step.key}`}
@@ -462,15 +462,15 @@ export default function CommitmentsPage() {
                             />
                             <Label
                               htmlFor={`${commitment.id}-${step.key}`}
-                              className="flex items-center gap-2 text-sm font-normal cursor-pointer"
+                              className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-normal cursor-pointer flex-1 min-w-0"
                             >
-                              {step.icon}
-                              {step.label}
+                              <span className="shrink-0">{step.icon}</span>
+                              <span className="truncate">{step.label}</span>
                               <Badge
                                 variant="outline"
-                                className="ml-auto text-xs"
+                                className="ml-auto text-xs shrink-0"
                               >
-                                +{step.xp} XP
+                                +{step.xp}
                               </Badge>
                             </Label>
                           </div>
@@ -479,36 +479,36 @@ export default function CommitmentsPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t">
-                      <div className="flex gap-2">
-                        <a
-                          href={commitment.issue_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button variant="outline" size="sm">
-                            <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                            View Issue
-                          </Button>
-                        </a>
-                      </div>
-                      <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 pt-2 border-t">
+                      <a
+                        href={commitment.issue_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="sm:order-1"
+                      >
+                        <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm w-full sm:w-auto">
+                          <ExternalLink className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
+                          View Issue
+                        </Button>
+                      </a>
+                      <div className="flex gap-2 sm:order-2">
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-8 text-xs sm:text-sm flex-1 sm:flex-none"
                           onClick={() => abandonMutation.mutate(commitment.id)}
                         >
-                          <X className="mr-1.5 h-3.5 w-3.5" />
+                          <X className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
                           Abandon
                         </Button>
                         <Button
                           size="sm"
+                          className="h-8 text-xs sm:text-sm flex-1 sm:flex-none bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25"
                           onClick={() => completeMutation.mutate(commitment.id)}
                           disabled={!commitment.progress_pr_opened}
-                          className="bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25"
                         >
-                          <Check className="mr-1.5 h-3.5 w-3.5" />
-                          Mark Complete
+                          <Check className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
+                          Complete
                         </Button>
                       </div>
                     </div>
@@ -531,27 +531,27 @@ export default function CommitmentsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="completed" className="mt-6 space-y-4">
+        <TabsContent value="completed" className="mt-4 sm:mt-6 space-y-4">
           {completedCommitments && completedCommitments.length > 0 ? (
             completedCommitments.map((commitment) => (
               <Card key={commitment.id} className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-teal-500/5">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-4">
+                <CardHeader className="pb-2 sm:pb-3 p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg leading-tight flex items-center gap-2">
-                        <Check className="h-5 w-5 text-green-500" />
-                        {commitment.issue_title}
+                      <CardTitle className="text-sm sm:text-lg leading-tight flex items-center gap-2">
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 shrink-0" />
+                        <span className="line-clamp-2">{commitment.issue_title}</span>
                       </CardTitle>
-                      <CardDescription className="mt-1">
+                      <CardDescription className="mt-1 text-xs sm:text-sm">
                         {commitment.github_repo_full_name} #
                         {commitment.issue_number}
                       </CardDescription>
                     </div>
-                    <Badge variant="success">Completed</Badge>
+                    <Badge variant="success" className="self-start text-xs shrink-0">Completed</Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Completed{" "}
                     {formatDistanceToNow(new Date(commitment.completed_at!), {
                       addSuffix: true,
@@ -571,22 +571,22 @@ export default function CommitmentsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="archived" className="mt-6 space-y-4">
+        <TabsContent value="archived" className="mt-4 sm:mt-6 space-y-4">
           {abandonedCommitments && abandonedCommitments.length > 0 ? (
             abandonedCommitments.map((commitment) => (
               <Card key={commitment.id} className="opacity-60">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-4">
+                <CardHeader className="pb-2 sm:pb-3 p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg leading-tight">
+                      <CardTitle className="text-sm sm:text-lg leading-tight line-clamp-2">
                         {commitment.issue_title}
                       </CardTitle>
-                      <CardDescription className="mt-1">
+                      <CardDescription className="mt-1 text-xs sm:text-sm">
                         {commitment.github_repo_full_name} #
                         {commitment.issue_number}
                       </CardDescription>
                     </div>
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="self-start text-xs shrink-0">
                       {commitment.status === "expired" ? "Expired" : "Abandoned"}
                     </Badge>
                   </div>

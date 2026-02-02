@@ -360,30 +360,30 @@ export default function RepoIssuesPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
-              <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
+            <div className="flex items-center justify-center sm:justify-between gap-2 pt-4 w-full">
+              <p className="hidden sm:block text-xs sm:text-sm text-muted-foreground">
                 {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
                 {Math.min(currentPage * ITEMS_PER_PAGE, filteredIssues?.length || 0)} of{" "}
                 {filteredIssues?.length || 0}
               </p>
-              <div className="flex items-center gap-2 order-1 sm:order-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8"
+                  className="h-8 w-8 sm:w-auto p-0 sm:px-3"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  <span className="hidden sm:inline ml-1">Previous</span>
+                  <span className="hidden sm:inline ml-1">Prev</span>
                 </Button>
-                <span className="text-xs sm:text-sm text-muted-foreground px-2">
+                <span className="text-xs text-muted-foreground px-2 whitespace-nowrap">
                   {currentPage} / {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8"
+                  className="h-8 w-8 sm:w-auto p-0 sm:px-3"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 >
