@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,8 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import type { GitHubIssue } from "@/lib/github/api";
 import { CommitDialog } from "@/components/issues/commit-dialog";
+import { IssueRecommendationCard } from "@/components/ai";
+import type { Issue as AIIssue, UserProfile } from "@/lib/ai";
 
 export default function IssuesPage() {
   const [selectedRepo, setSelectedRepo] = useState<string>("all");
@@ -47,6 +49,31 @@ export default function IssuesPage() {
   } | null>(null);
 
   const ITEMS_PER_PAGE = 10;
+
+  // Fetch current user
+  const { data: user } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      return user;
+    },
+  });
+
+  // Fetch user stats for AI context
+  const { data: userStats } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("user_stats")
+        .select("*")
+        .single();
+      if (error && error.code !== "PGRST116") throw error;
+      return data;
+    },
+  });
 
   // Fetch tracked repos
   const { data: trackedRepos } = useQuery({
@@ -124,6 +151,33 @@ export default function IssuesPage() {
       return issue.score.difficulty === difficultyFilter;
     })
     .sort((a, b) => b.score.activityScore - a.score.activityScore);
+
+  // Prepare AI recommendation input
+  const aiRecommendationInput = useMemo(() => {
+    if (!user || !filteredIssues || filteredIssues.length === 0) return null;
+
+    const userProfile: UserProfile = {
+      id: user.id,
+      username: user.user_metadata?.user_name || "contributor",
+      skillLevel: user.user_metadata?.skill_level || "beginner",
+      preferredLanguages: user.user_metadata?.languages || ["javascript", "typescript"],
+      interests: user.user_metadata?.interests,
+      pastContributions: userStats?.completed_commitments || 0,
+    };
+
+    const aiIssues: AIIssue[] = filteredIssues.slice(0, 10).map((issue) => ({
+      id: String(issue.id),
+      title: issue.title,
+      body: issue.body || undefined,
+      labels: issue.labels?.map((l: { name: string }) => l.name) || [],
+      repository: issue.repoFullName,
+      language: undefined,
+      commentCount: issue.comments,
+      url: issue.html_url,
+    }));
+
+    return { user: userProfile, issues: aiIssues };
+  }, [user, filteredIssues, userStats]);
 
   // Pagination
   const totalIssues = filteredIssues?.length || 0;
@@ -227,6 +281,21 @@ export default function IssuesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Recommendation */}
+      {filteredIssues && filteredIssues.length > 0 && (
+        <IssueRecommendationCard
+          input={aiRecommendationInput}
+          enabled={!isLoading && !!aiRecommendationInput}
+          onIssueClick={(issueId) => {
+            const issue = filteredIssues?.find((i) => String(i.id) === issueId);
+            if (issue) {
+              setSelectedIssue({ issue, repoFullName: issue.repoFullName });
+              setCommitDialogOpen(true);
+            }
+          }}
+        />
+      )}
 
       {/* Issues List */}
       {!trackedRepos || trackedRepos.length === 0 ? (

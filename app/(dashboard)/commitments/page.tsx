@@ -30,6 +30,8 @@ import {
 import { formatDistanceToNow, differenceInDays, format } from "date-fns";
 import Link from "next/link";
 import { BADGES, type BadgeType } from "@/lib/constants/badges";
+import { CommitmentCoachCard } from "@/components/ai";
+import type { Commitment as AICommitment, UserContext, Milestone } from "@/lib/ai";
 
 type ProgressStep =
   | "read_issue"
@@ -64,9 +66,70 @@ const PROGRESS_STEPS: {
   },
 ];
 
+// Helper to convert progress to milestone
+function getCommitmentMilestone(commitment: {
+  progress_read_issue?: boolean;
+  progress_asked_question?: boolean;
+  progress_working_on_solution?: boolean;
+  progress_pr_opened?: boolean;
+}): Milestone {
+  if (commitment.progress_pr_opened) return "open_pr";
+  if (commitment.progress_working_on_solution) return "work_on_solution";
+  if (commitment.progress_asked_question) return "ask_question";
+  if (commitment.progress_read_issue) return "read_issue";
+  return "not_started";
+}
+
+function getCompletedMilestones(commitment: {
+  progress_read_issue?: boolean;
+  progress_asked_question?: boolean;
+  progress_working_on_solution?: boolean;
+  progress_pr_opened?: boolean;
+}): Milestone[] {
+  const completed: Milestone[] = [];
+  if (commitment.progress_read_issue) {
+    completed.push("not_started", "read_issue");
+  }
+  if (commitment.progress_asked_question) {
+    completed.push("ask_question");
+  }
+  if (commitment.progress_working_on_solution) {
+    completed.push("work_on_solution");
+  }
+  if (commitment.progress_pr_opened) {
+    completed.push("open_pr");
+  }
+  return completed;
+}
+
 export default function CommitmentsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch current user
+  const { data: user } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      return user;
+    },
+  });
+
+  // Fetch user stats
+  const { data: userStats } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("user_stats")
+        .select("*")
+        .single();
+      if (error && error.code !== "PGRST116") throw error;
+      return data;
+    },
+  });
 
   // Fetch commitments
   const { data: commitments, isLoading } = useQuery({
@@ -477,6 +540,30 @@ export default function CommitmentsPage() {
                         ))}
                       </div>
                     </div>
+
+                    {/* AI Coach */}
+                    <CommitmentCoachCard
+                      input={{
+                        commitment: {
+                          id: commitment.id,
+                          issueTitle: commitment.issue_title,
+                          issueUrl: commitment.issue_url,
+                          repository: commitment.github_repo_full_name,
+                          createdAt: commitment.created_at,
+                          deadlineAt: commitment.deadline_at,
+                          currentMilestone: getCommitmentMilestone(commitment),
+                          milestonesCompleted: getCompletedMilestones(commitment),
+                          lastActivityAt: commitment.updated_at,
+                        } as AICommitment,
+                        user: {
+                          username: user?.user_metadata?.user_name || "contributor",
+                          totalCommitments: activeCommitments?.length,
+                          completedCommitments: userStats?.completed_commitments,
+                        } as UserContext,
+                      }}
+                      enabled={!!user}
+                      className="mt-2"
+                    />
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 pt-2 border-t">
