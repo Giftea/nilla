@@ -57,9 +57,9 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
         className="fixed inset-0 bg-background/80 backdrop-blur-sm"
         onClick={() => onOpenChange(false)}
       />
-      <div className="fixed inset-y-0 left-0 w-72 border-r bg-background p-6">
+      <div className="fixed inset-y-0 left-0 w-72 border-r bg-gradient-to-b from-background to-muted/30 p-6">
         <div className="flex items-center justify-between mb-8">
-          <span className="text-lg font-semibold">Navigation</span>
+          <span className="text-lg font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">Navigation</span>
           <Button
             variant="ghost"
             size="icon"
@@ -69,22 +69,25 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
           </Button>
         </div>
         <nav className="flex flex-col gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => onOpenChange(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                pathname === item.href
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground"
-              )}
-            >
-              <item.icon className="h-5 w-5" />
-              {item.title}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => onOpenChange(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                  isActive
+                    ? "bg-gradient-to-r from-violet-500/10 to-indigo-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/20 shadow-sm"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <item.icon className={cn("h-5 w-5", isActive && "text-violet-600 dark:text-violet-400")} />
+                {item.title}
+              </Link>
+            );
+          })}
         </nav>
       </div>
     </div>

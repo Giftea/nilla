@@ -148,38 +148,38 @@ export default function RepoIssuesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Back button and header */}
-      <div className="rounded-2xl bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-cyan-500/10 border border-violet-500/20 p-6">
+      <div className="rounded-2xl bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-cyan-500/10 border border-violet-500/20 p-4 sm:p-6">
         <Link
           href="/repos"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground mb-3 sm:mb-4"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to repositories
         </Link>
-        <h1 className="text-2xl font-bold flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25">
-            <Target className="h-5 w-5" />
+        <h1 className="text-lg sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-lg shadow-violet-500/25 shrink-0">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent truncate">
             {fullName}
           </span>
         </h1>
         {repo && (
-          <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
-            {repo.language && <Badge variant="outline">{repo.language}</Badge>}
+          <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+            {repo.language && <Badge variant="outline" className="text-xs">{repo.language}</Badge>}
             <span className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5" />
+              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               {repo.stars_count?.toLocaleString() || 0}
             </span>
             <span className="flex items-center gap-1">
-              <GitFork className="h-3.5 w-3.5" />
+              <GitFork className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               {repo.forks_count?.toLocaleString() || 0}
             </span>
             <span className="flex items-center gap-1">
-              <CircleDot className="h-3.5 w-3.5" />
-              {repo.open_issues_count || 0} open issues
+              <CircleDot className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              {repo.open_issues_count || 0}
             </span>
             <a
               href={repo.html_url}
@@ -187,55 +187,57 @@ export default function RepoIssuesPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-foreground"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               GitHub
             </a>
           </div>
         )}
-        <p className="text-muted-foreground mt-2">
+        <p className="text-muted-foreground mt-2 text-xs sm:text-base line-clamp-2">
           {repo?.description || "Browse beginner-friendly issues"}
         </p>
       </div>
 
       {/* Filters */}
       <Card className="border-0 shadow-lg shadow-violet-500/5">
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-4">
+        <CardContent className="p-4 sm:pt-6">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-violet-500/20 to-indigo-500/20">
                 <Filter className="h-3.5 w-3.5 text-violet-600" />
               </div>
               <span className="text-sm font-medium">Filters:</span>
             </div>
-            <Select value={labelFilter} onValueChange={handleLabelChange}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Label" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All labels</SelectItem>
-                <SelectItem value="good-first-issue">
-                  Good first issue
-                </SelectItem>
-                 <SelectItem value="first-timers-only">
-                  First timers only
-                </SelectItem>
-                <SelectItem value="help-wanted">Help wanted</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={difficultyFilter}
-              onValueChange={handleDifficultyChange}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Difficulty" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All levels</SelectItem>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-4">
+              <Select value={labelFilter} onValueChange={handleLabelChange}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Label" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All labels</SelectItem>
+                  <SelectItem value="good-first-issue">
+                    Good first issue
+                  </SelectItem>
+                  <SelectItem value="first-timers-only">
+                    First timers only
+                  </SelectItem>
+                  <SelectItem value="help-wanted">Help wanted</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={difficultyFilter}
+                onValueChange={handleDifficultyChange}
+              >
+                <SelectTrigger className="w-full sm:w-36">
+                  <SelectValue placeholder="Difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All levels</SelectItem>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="moderate">Moderate</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -262,37 +264,38 @@ export default function RepoIssuesPage() {
               key={issue.id}
               className="border-0 shadow-lg shadow-violet-500/5 hover:shadow-xl hover:shadow-violet-500/10 transition-all"
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-4">
+              <CardHeader className="pb-2 sm:pb-3 p-4 sm:p-6">
+                <div className="flex items-start justify-between gap-2 sm:gap-4">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg leading-tight">
+                    <CardTitle className="text-sm sm:text-lg leading-tight">
                       <a
                         href={issue.html_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:underline"
+                        className="hover:underline line-clamp-2"
                       >
                         {issue.title}
                       </a>
                     </CardTitle>
-                    <CardDescription className="mt-1">
+                    <CardDescription className="mt-1 text-xs sm:text-sm">
                       #{issue.number}
                     </CardDescription>
                   </div>
                   <Badge
-                    className={getDifficultyColor(issue.score.difficulty)}
+                    className={`${getDifficultyColor(issue.score.difficulty)} text-xs shrink-0`}
                     variant="secondary"
                   >
                     {issue.score.difficulty}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {issue.labels.map((label) => (
+              <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0 sm:pt-0">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {issue.labels.slice(0, 3).map((label) => (
                     <Badge
                       key={label.id}
                       variant="outline"
+                      className="text-xs"
                       style={{
                         borderColor: `#${label.color}`,
                         color: `#${label.color}`,
@@ -301,18 +304,23 @@ export default function RepoIssuesPage() {
                       {label.name}
                     </Badge>
                   ))}
+                  {issue.labels.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{issue.labels.length - 3}
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                   {issue.score.recommendation}
                 </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <MessageSquare className="h-3.5 w-3.5" />
-                      {issue.comments} comments
+                      <MessageSquare className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      {issue.comments}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5" />
+                      <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                       {formatDistanceToNow(new Date(issue.updated_at), {
                         addSuffix: true,
                       })}
@@ -324,22 +332,22 @@ export default function RepoIssuesPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                      <Button variant="outline" size="sm" className="h-8 text-xs sm:text-sm">
+                        <ExternalLink className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
                         View
                       </Button>
                     </a>
                     <Button
                       size="sm"
-                      onClick={() => handleCommit(issue)}
-                      disabled={activeCommitments?.has(issue.id)}
-                      className={
+                      className={`h-8 text-xs sm:text-sm ${
                         activeCommitments?.has(issue.id)
                           ? ""
                           : "bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 text-white border-0 shadow-md shadow-violet-500/25"
-                      }
+                      }`}
+                      onClick={() => handleCommit(issue)}
+                      disabled={activeCommitments?.has(issue.id)}
                     >
-                      <Target className="mr-1.5 h-3.5 w-3.5" />
+                      <Target className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
                       {activeCommitments?.has(issue.id)
                         ? "Committed"
                         : "Commit"}
@@ -352,32 +360,34 @@ export default function RepoIssuesPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
+              <p className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
                 {Math.min(currentPage * ITEMS_PER_PAGE, filteredIssues?.length || 0)} of{" "}
-                {filteredIssues?.length || 0} issues
+                {filteredIssues?.length || 0}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 order-1 sm:order-2">
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-8"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Previous
+                  <span className="hidden sm:inline ml-1">Previous</span>
                 </Button>
-                <span className="text-sm text-muted-foreground px-2">
-                  Page {currentPage} of {totalPages}
+                <span className="text-xs sm:text-sm text-muted-foreground px-2">
+                  {currentPage} / {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-8"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Next
+                  <span className="hidden sm:inline mr-1">Next</span>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

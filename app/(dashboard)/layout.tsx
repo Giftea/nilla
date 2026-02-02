@@ -43,7 +43,7 @@ export default async function DashboardLayout({
       />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

@@ -70,10 +70,10 @@ export default async function DashboardPage() {
   const goalInfo = activeGoal ? GOALS[activeGoal.goal_type as keyof typeof GOALS] : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Welcome Section */}
-      <div className="rounded-2xl bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-cyan-500/10 border border-violet-500/20 p-6">
-        <h1 className="text-2xl font-bold">
+      <div className="rounded-2xl bg-gradient-to-r from-violet-500/10 via-indigo-500/10 to-cyan-500/10 border border-violet-500/20 p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold">
           Welcome back,{" "}
           <span className="bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
             {profile?.display_name || profile?.github_username}
@@ -88,62 +88,62 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Card className="border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-indigo-500/5 hover:shadow-lg hover:shadow-violet-500/5 transition-all">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total XP</CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 text-white">
-              <Zap className="h-4 w-4" />
+          <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-2 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Total XP</CardTitle>
+            <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 text-white">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{userStats?.total_xp || 0}</div>
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">{userStats?.total_xp || 0}</div>
             <p className="text-xs text-muted-foreground">
               Level {userStats?.current_level || 1}
             </p>
           </CardContent>
         </Card>
         <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-red-500/5 hover:shadow-lg hover:shadow-orange-500/5 transition-all">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-red-500 text-white">
-              <Flame className="h-4 w-4" />
+          <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-2 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Streak</CardTitle>
+            <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-red-500 text-white">
+              <Flame className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-              {userStats?.current_streak || 0} days
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+              {userStats?.current_streak || 0}<span className="text-sm sm:text-base ml-1">days</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Longest: {userStats?.longest_streak || 0} days
+              Best: {userStats?.longest_streak || 0}
             </p>
           </CardContent>
         </Card>
         <Card className="border-yellow-500/20 bg-gradient-to-br from-yellow-500/5 to-amber-500/5 hover:shadow-lg hover:shadow-yellow-500/5 transition-all">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-500 to-amber-500 text-white">
-              <Trophy className="h-4 w-4" />
+          <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-2 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Completed</CardTitle>
+            <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-yellow-500 to-amber-500 text-white">
+              <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold bg-gradient-to-r from-yellow-500 to-amber-500 bg-clip-text text-transparent">
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-500 to-amber-500 bg-clip-text text-transparent">
               {userStats?.completed_commitments || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              of {userStats?.total_commitments || 0} commitments
+              of {userStats?.total_commitments || 0}
             </p>
           </CardContent>
         </Card>
         <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 hover:shadow-lg hover:shadow-emerald-500/5 transition-all">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">PRs Opened</CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
-              <CircleDot className="h-4 w-4" />
+          <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-6 pb-2 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">PRs</CardTitle>
+            <div className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
+              <CircleDot className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
+          <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+            <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
               {userStats?.total_prs_opened || 0}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -153,26 +153,26 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
         {/* Active Commitments */}
-        <Card className="border-0 shadow-lg shadow-violet-500/5">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-indigo-500/20">
-                <Target className="h-4 w-4 text-violet-600" />
+        <Card className="border-0 shadow-lg shadow-violet-500/5 overflow-hidden">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-indigo-500/20">
+                <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-600" />
               </div>
               Active Commitments
             </CardTitle>
             <Link href="/commitments">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
                 View all
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             {activeCommitments && activeCommitments.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {activeCommitments.map((commitment) => {
                   const deadline = new Date(commitment.deadline_at);
                   const isOverdue = deadline < new Date();
@@ -183,13 +183,13 @@ export default async function DashboardPage() {
                   return (
                     <div
                       key={commitment.id}
-                      className="flex items-start justify-between gap-4 rounded-lg border p-3"
+                      className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4 rounded-lg border p-3"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
+                        <p className="font-medium text-sm sm:text-base truncate">
                           {commitment.issue_title}
                         </p>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {commitment.github_repo_full_name} #
                           {commitment.issue_number}
                         </p>
@@ -202,12 +202,12 @@ export default async function DashboardPage() {
                               ? "warning"
                               : "secondary"
                         }
-                        className="shrink-0"
+                        className="shrink-0 self-start text-xs"
                       >
                         <Clock className="mr-1 h-3 w-3" />
                         {isOverdue
                           ? "Overdue"
-                          : `${daysLeft} day${daysLeft !== 1 ? "s" : ""}`}
+                          : `${daysLeft}d`}
                       </Badge>
                     </div>
                   );
@@ -230,37 +230,37 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Tracked Repositories */}
-        <Card className="border-0 shadow-lg shadow-indigo-500/5">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/20 to-cyan-500/20">
-                <FolderGit2 className="h-4 w-4 text-indigo-600" />
+        <Card className="border-0 shadow-lg shadow-indigo-500/5 overflow-hidden">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/20 to-cyan-500/20">
+                <FolderGit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-indigo-600" />
               </div>
-              Tracked Repositories
+              Tracked Repos
             </CardTitle>
             <Link href="/repos">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
                 Manage
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             {trackedRepos && trackedRepos.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {trackedRepos.map((repo) => (
                   <div
                     key={repo.id}
-                    className="flex items-center justify-between gap-4 rounded-lg border p-3"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 rounded-lg border p-3"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{repo.full_name}</p>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="font-medium text-sm sm:text-base truncate">{repo.full_name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {repo.description || "No description"}
                       </p>
                     </div>
                     {repo.language && (
-                      <Badge variant="outline" className="shrink-0">
+                      <Badge variant="outline" className="shrink-0 self-start text-xs">
                         {repo.language}
                       </Badge>
                     )}
@@ -300,14 +300,14 @@ export default async function DashboardPage() {
               {recentActivity.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between gap-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-md shadow-violet-500/25">
-                      <Zap className="h-4 w-4" />
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 text-white shadow-md shadow-violet-500/25">
+                      <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-medium truncate">
                         {activity.description ||
                           activity.action.replace(/_/g, " ")}
                       </p>
@@ -318,7 +318,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0">+{activity.xp_amount} XP</Badge>
+                  <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white border-0 shrink-0 text-xs">+{activity.xp_amount} XP</Badge>
                 </div>
               ))}
             </div>
