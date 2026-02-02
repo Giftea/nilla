@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Exclude packages from webpack bundling to avoid conflicts with Next.js
+  serverExternalPackages: ["genkit", "@genkit-ai/core", "genkitx-openai", "opik"],
 };
 
 export default nextConfig;
