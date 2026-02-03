@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ai, opikClient } from "../genkit";
+import { ai, flushTraces, DEFAULT_MODEL } from "../openai";
 
 // ============================================
 // MILESTONE DEFINITIONS
@@ -150,7 +150,7 @@ function calculateTimeRemaining(deadlineAt: string, currentTime: string) {
   return { hoursRemaining, daysRemaining, isOverdue: diffMs < 0 };
 }
 
-function calculateProgress(currentMilestone: Milestone, milestonesCompleted: Milestone[]) {
+function calculateProgress(currentMilestone: Milestone) {
   const currentIndex = MILESTONE_ORDER.indexOf(currentMilestone);
   const totalMilestones = MILESTONE_ORDER.length - 1; // Exclude 'completed' as it's the end state
   const milestonesRemaining = Math.max(0, totalMilestones - currentIndex);
@@ -185,38 +185,57 @@ function determineRiskLevel(
   return "on_track";
 }
 
+function getDefaultAction(milestone: Milestone): string {
+  const actions: Record<Milestone, string> = {
+    not_started: "Open the GitHub issue and read through it carefully, including all comments.",
+    read_issue:
+      "Think about any questions you have. If unclear on anything, post a clarifying comment on the issue.",
+    ask_question:
+      "Start working on the solution. Set up your local environment and make your first code change.",
+    work_on_solution:
+      "Continue your implementation. Once ready, open a draft PR to get early feedback.",
+    open_pr: "Address any PR feedback and ensure all checks pass.",
+    completed: "Celebrate! Consider picking your next issue to contribute to.",
+  };
+  return actions[milestone];
+}
+
+function validateTone(
+  tone: string
+): "encouraging" | "motivating" | "celebratory" | "urgent" | "supportive" {
+  const validTones = ["encouraging", "motivating", "celebratory", "urgent", "supportive"] as const;
+  return validTones.includes(tone as (typeof validTones)[number])
+    ? (tone as (typeof validTones)[number])
+    : "encouraging";
+}
+
 // ============================================
-// AGENT FLOW
+// AGENT FUNCTION
 // ============================================
 
-export const commitmentCoachFlow = ai.defineFlow(
-  {
-    name: "commitmentCoachFlow",
-    inputSchema: CommitmentCoachInputSchema,
-    outputSchema: CommitmentCoachOutputSchema,
-  },
-  async (input) => {
-    const { commitment, user } = input;
-    const currentTime = input.currentTime || new Date().toISOString();
+export async function commitmentCoachFlow(
+  input: CommitmentCoachInput
+): Promise<CommitmentCoachOutput> {
+  const { commitment, user } = input;
+  const currentTime = input.currentTime || new Date().toISOString();
 
-    // Calculate time and progress metrics
-    const { hoursRemaining, daysRemaining, isOverdue } = calculateTimeRemaining(
-      commitment.deadlineAt,
-      currentTime
-    );
-    const { milestonesRemaining, percentComplete } = calculateProgress(
-      commitment.currentMilestone,
-      commitment.milestonesCompleted
-    );
-    const riskLevel = determineRiskLevel(
-      daysRemaining,
-      hoursRemaining,
-      commitment.currentMilestone,
-      isOverdue
-    );
+  // Calculate time and progress metrics
+  const { hoursRemaining, daysRemaining, isOverdue } = calculateTimeRemaining(
+    commitment.deadlineAt,
+    currentTime
+  );
+  const { milestonesRemaining, percentComplete } = calculateProgress(
+    commitment.currentMilestone
+  );
+  const riskLevel = determineRiskLevel(
+    daysRemaining,
+    hoursRemaining,
+    commitment.currentMilestone,
+    isOverdue
+  );
 
-    // Build the coaching prompt
-    const systemPrompt = `You are a supportive but honest commitment coach for open source contributors. Your personality is:
+  // Build the coaching prompt
+  const systemPrompt = `You are a supportive but honest commitment coach for open source contributors. Your personality is:
 - Encouraging but realistic
 - Warm but not patronizing
 - Action-oriented and specific
@@ -240,7 +259,7 @@ COACHING PRINCIPLES:
 - If risk is high, be direct but not discouraging
 - Tailor your tone to the situation`;
 
-    const situationContext = `
+  const situationContext = `
 ## CURRENT SITUATION
 
 **User:** ${user.username}
@@ -265,9 +284,7 @@ ${user.totalCommitments !== undefined ? `**Active commitments:** ${user.totalCom
 ${commitment.lastActivityAt ? `- Last activity: ${commitment.lastActivityAt}` : "- No recent activity recorded"}
 `;
 
-    const prompt = `${systemPrompt}
-
-${situationContext}
+  const userMessage = `${situationContext}
 
 Based on this situation, provide coaching guidance. Think like a supportive mentor who wants this person to succeed.
 
@@ -297,115 +314,85 @@ Choose the nudge tone based on the situation:
 - "urgent" for critical situations
 - "supportive" for struggling users`;
 
-    const response = await ai.generate({ prompt });
-    const text = response.text.trim();
+  // Call OpenAI with Opik tracking
+  const completion = await ai.chat.completions.create({
+    model: DEFAULT_MODEL,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ],
+    temperature: 0.7,
+    max_tokens: 1024,
+  });
 
-    // Parse LLM response
-    let llmOutput: {
-      nextAction: { action: string; why: string; estimatedMinutes?: number };
-      nudge: { message: string; tone: string };
-      riskReason: string;
-      warning?: { message: string; suggestion: string };
-    };
+  const text = completion.choices[0]?.message?.content?.trim() ?? "";
 
-    try {
-      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      const jsonStr = jsonMatch ? jsonMatch[1] : text;
-      llmOutput = JSON.parse(jsonStr);
-    } catch {
-      // Fallback response
-      llmOutput = {
-        nextAction: {
-          action: getDefaultAction(commitment.currentMilestone),
-          why: "This is the natural next step in your contribution journey.",
-          estimatedMinutes: 15,
-        },
-        nudge: {
-          message: `Hey ${user.username}, you've got this! Every step forward counts.`,
-          tone: "encouraging",
-        },
-        riskReason: "Unable to fully analyze - please review your timeline.",
-      };
-    }
+  // Parse LLM response
+  let llmOutput: {
+    nextAction: { action: string; why: string; estimatedMinutes?: number };
+    nudge: { message: string; tone: string };
+    riskReason: string;
+    warning?: { message: string; suggestion: string };
+  };
 
-    // Build the structured output
-    const result: CommitmentCoachOutput = {
+  try {
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    const jsonStr = jsonMatch ? jsonMatch[1] : text;
+    llmOutput = JSON.parse(jsonStr);
+  } catch {
+    // Fallback response
+    llmOutput = {
       nextAction: {
-        action: llmOutput.nextAction.action,
-        why: llmOutput.nextAction.why,
-        estimatedMinutes: llmOutput.nextAction.estimatedMinutes,
+        action: getDefaultAction(commitment.currentMilestone),
+        why: "This is the natural next step in your contribution journey.",
+        estimatedMinutes: 15,
       },
       nudge: {
-        message: llmOutput.nudge.message,
-        tone: validateTone(llmOutput.nudge.tone),
+        message: `Hey ${user.username}, you've got this! Every step forward counts.`,
+        tone: "encouraging",
       },
-      riskAssessment: {
-        level: riskLevel,
-        reason: llmOutput.riskReason,
-        daysRemaining,
-        hoursRemaining,
-      },
-      progress: {
-        currentMilestone: commitment.currentMilestone,
-        milestonesRemaining,
-        percentComplete,
-      },
-      meta: {
-        generatedAt: new Date().toISOString(),
-        commitmentId: commitment.id,
-      },
+      riskReason: "Unable to fully analyze - please review your timeline.",
     };
-
-    // Only add warning if risk is elevated
-    if ((riskLevel === "at_risk" || riskLevel === "critical") && llmOutput.warning) {
-      result.warning = {
-        message: llmOutput.warning.message,
-        suggestion: llmOutput.warning.suggestion,
-      };
-    }
-
-    // Log to Opik for observability
-    const trace = opikClient.trace({
-      name: "commitmentCoachFlow",
-      input: {
-        username: user.username,
-        milestone: commitment.currentMilestone,
-        daysRemaining,
-        riskLevel,
-      },
-      output: result,
-    });
-    trace.end();
-    await opikClient.flush();
-
-    return result;
   }
-);
 
-// ============================================
-// HELPER: DEFAULT ACTIONS
-// ============================================
-
-function getDefaultAction(milestone: Milestone): string {
-  const actions: Record<Milestone, string> = {
-    not_started: "Open the GitHub issue and read through it carefully, including all comments.",
-    read_issue:
-      "Think about any questions you have. If unclear on anything, post a clarifying comment on the issue.",
-    ask_question:
-      "Start working on the solution. Set up your local environment and make your first code change.",
-    work_on_solution:
-      "Continue your implementation. Once ready, open a draft PR to get early feedback.",
-    open_pr: "Address any PR feedback and ensure all checks pass.",
-    completed: "Celebrate! Consider picking your next issue to contribute to.",
+  // Build the structured output
+  const result: CommitmentCoachOutput = {
+    nextAction: {
+      action: llmOutput.nextAction.action,
+      why: llmOutput.nextAction.why,
+      estimatedMinutes: llmOutput.nextAction.estimatedMinutes,
+    },
+    nudge: {
+      message: llmOutput.nudge.message,
+      tone: validateTone(llmOutput.nudge.tone),
+    },
+    riskAssessment: {
+      level: riskLevel,
+      reason: llmOutput.riskReason,
+      daysRemaining,
+      hoursRemaining,
+    },
+    progress: {
+      currentMilestone: commitment.currentMilestone,
+      milestonesRemaining,
+      percentComplete,
+    },
+    meta: {
+      generatedAt: new Date().toISOString(),
+      commitmentId: commitment.id,
+    },
   };
-  return actions[milestone];
-}
 
-function validateTone(
-  tone: string
-): "encouraging" | "motivating" | "celebratory" | "urgent" | "supportive" {
-  const validTones = ["encouraging", "motivating", "celebratory", "urgent", "supportive"] as const;
-  return validTones.includes(tone as (typeof validTones)[number])
-    ? (tone as (typeof validTones)[number])
-    : "encouraging";
+  // Only add warning if risk is elevated
+  if ((riskLevel === "at_risk" || riskLevel === "critical") && llmOutput.warning) {
+    result.warning = {
+      message: llmOutput.warning.message,
+      suggestion: llmOutput.warning.suggestion,
+    };
+  }
+
+  // Flush traces to ensure they're sent
+  await flushTraces();
+
+  return result;
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ai, opikClient } from "../genkit";
-
+import { ai, flushTraces, DEFAULT_MODEL } from "../openai";
+import { track } from "opik";
 // ============================================
 // INPUT SCHEMAS
 // ============================================
@@ -111,20 +111,16 @@ export type RecommendIssueOutput = z.infer<typeof RecommendIssueOutputSchema>;
 export type IssueAnalysis = z.infer<typeof IssueAnalysisSchema>;
 
 // ============================================
-// AGENT FLOW
+// AGENT FUNCTION
 // ============================================
 
-export const recommendIssueFlow = ai.defineFlow(
-  {
-    name: "recommendIssueFlow",
-    inputSchema: RecommendIssueInputSchema,
-    outputSchema: RecommendIssueOutputSchema,
-  },
-  async (input) => {
-    const { user, issues } = input;
 
-    // Build a detailed prompt for agentic reasoning
-    const systemPrompt = `You are an expert open source contribution advisor. Your job is to analyze GitHub issues and recommend the best one for a specific contributor.
+export async function recommendIssueFlow(
+  input: RecommendIssueInput
+): Promise<RecommendIssueOutput> {
+  const { user, issues } = input;
+
+  const systemPrompt = `You are an expert open source contribution advisor. Your job is to analyze GitHub issues and recommend the best one for a specific contributor.
 
 You must reason carefully about:
 1. DIFFICULTY ASSESSMENT: Analyze each issue's complexity based on:
@@ -148,7 +144,7 @@ You must reason carefully about:
 
 Be decisive. Pick ONE best issue and explain your reasoning clearly.`;
 
-    const userContext = `
+  const userContext = `
 ## USER PROFILE
 - Username: ${user.username}
 - Skill Level: ${user.skillLevel}
@@ -158,9 +154,9 @@ Be decisive. Pick ONE best issue and explain your reasoning clearly.`;
 - Available Hours/Week: ${user.availableHoursPerWeek || "Not specified"}
 `;
 
-    const issuesContext = issues
-      .map(
-        (issue, idx) => `
+  const issuesContext = issues
+    .map(
+      (issue, idx) => `
 ## ISSUE ${idx + 1}
 - ID: ${issue.id}
 - Title: ${issue.title}
@@ -171,12 +167,10 @@ Be decisive. Pick ONE best issue and explain your reasoning clearly.`;
 - URL: ${issue.url}
 - Description: ${issue.body?.slice(0, 500) || "No description"}${issue.body && issue.body.length > 500 ? "..." : ""}
 `
-      )
-      .join("\n---\n");
+    )
+    .join("\n---\n");
 
-    const prompt = `${systemPrompt}
-
-${userContext}
+  const userMessage = `${userContext}
 
 ## CANDIDATE ISSUES
 ${issuesContext}
@@ -200,55 +194,52 @@ Analyze each issue and provide your recommendation. Respond with ONLY a valid JS
   ]
 }`;
 
-    const response = await ai.generate({ prompt });
-    const text = response.text.trim();
+  // Call OpenAI with Opik tracking
+  const completion = await ai.chat.completions.create({
+    model: DEFAULT_MODEL,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ],
+    temperature: 0.7,
+    max_tokens: 2048,
+  });
 
-    // Parse the LLM response
-    let result: RecommendIssueOutput;
-    try {
-      // Try to extract JSON if wrapped in markdown code blocks
-      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      const jsonStr = jsonMatch ? jsonMatch[1] : text;
-      result = JSON.parse(jsonStr);
-    } catch {
-      // If parsing fails, create a fallback response
-      const fallbackIssue = issues[0];
-      result = {
-        recommendedIssue: {
-          id: fallbackIssue.id,
-          title: fallbackIssue.title,
-          repository: fallbackIssue.repository,
-          url: fallbackIssue.url,
-        },
-        explanation:
-          "Unable to fully analyze issues. Recommending the first issue as a starting point. Please review manually.",
-        riskLevel: "medium",
-        riskFactors: ["Automated analysis incomplete"],
-        alternativeIssues: [],
-        rankedIssues: issues.map((issue) => ({
-          issueId: issue.id,
-          difficultyScore: 5,
-          fitScore: 5,
-          reasoning: "Unable to analyze - manual review recommended",
-        })),
-      };
-    }
+  const text = completion.choices[0]?.message?.content?.trim() ?? "";
 
-    // Log to Opik for observability
-    const trace = opikClient.trace({
-      name: "recommendIssueFlow",
-      input: {
-        user: { username: user.username, skillLevel: user.skillLevel },
-        issueCount: issues.length,
+  // Parse the LLM response
+  let result: RecommendIssueOutput;
+  try {
+    // Try to extract JSON if wrapped in markdown code blocks
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    const jsonStr = jsonMatch ? jsonMatch[1] : text;
+    result = JSON.parse(jsonStr);
+  } catch {
+    // If parsing fails, create a fallback response
+    const fallbackIssue = issues[0];
+    result = {
+      recommendedIssue: {
+        id: fallbackIssue.id,
+        title: fallbackIssue.title,
+        repository: fallbackIssue.repository,
+        url: fallbackIssue.url,
       },
-      output: {
-        recommendedIssueId: result.recommendedIssue.id,
-        riskLevel: result.riskLevel,
-      },
-    });
-    trace.end();
-    await opikClient.flush();
-
-    return result;
+      explanation:
+        "Unable to fully analyze issues. Recommending the first issue as a starting point. Please review manually.",
+      riskLevel: "medium",
+      riskFactors: ["Automated analysis incomplete"],
+      alternativeIssues: [],
+      rankedIssues: issues.map((issue) => ({
+        issueId: issue.id,
+        difficultyScore: 5,
+        fitScore: 5,
+        reasoning: "Unable to analyze - manual review recommended",
+      })),
+    };
   }
-);
+
+  // Flush traces to ensure they're sent
+  await flushTraces();
+
+  return result;
+}
