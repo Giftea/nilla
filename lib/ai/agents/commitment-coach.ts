@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ai, flushTraces, DEFAULT_MODEL } from "../openai";
+import { flushTraces, DEFAULT_MODEL, createTrackedAI } from "../openai";
 
 // ============================================
 // MILESTONE DEFINITIONS
@@ -314,8 +314,11 @@ Choose the nudge tone based on the situation:
 - "urgent" for critical situations
 - "supportive" for struggling users`;
 
+  const trackedAI = createTrackedAI("commitment-coach-completion");
+
+
   // Call OpenAI with Opik tracking
-  const completion = await ai.chat.completions.create({
+  const completion = await trackedAI.chat.completions.create({
     model: DEFAULT_MODEL,
     messages: [
       { role: "system", content: systemPrompt },

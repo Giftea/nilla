@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ai, flushTraces, DEFAULT_MODEL } from "../openai";
-import { track } from "opik";
+import { flushTraces, DEFAULT_MODEL, createTrackedAI } from "../openai";
+
 // ============================================
 // INPUT SCHEMAS
 // ============================================
@@ -17,7 +17,9 @@ export const UserProfileSchema = z.object({
   interests: z
     .array(z.string())
     .optional()
-    .describe("Topics or areas the user is interested in (e.g., 'testing', 'docs', 'frontend')"),
+    .describe(
+      "Topics or areas the user is interested in (e.g., 'testing', 'docs', 'frontend')",
+    ),
   pastContributions: z
     .number()
     .optional()
@@ -35,7 +37,10 @@ export const IssueSchema = z.object({
   body: z.string().optional().describe("Issue description/body"),
   labels: z.array(z.string()).describe("Labels attached to the issue"),
   repository: z.string().describe("Repository name (owner/repo)"),
-  language: z.string().optional().describe("Primary language of the repository"),
+  language: z
+    .string()
+    .optional()
+    .describe("Primary language of the repository"),
   openedAt: z.string().optional().describe("When the issue was opened"),
   commentCount: z.number().optional().default(0).describe("Number of comments"),
   url: z.string().describe("URL to the issue"),
@@ -78,7 +83,9 @@ export const RecommendIssueOutputSchema = z.object({
   }),
   explanation: z
     .string()
-    .describe("Detailed explanation of why this issue is the best fit for the user"),
+    .describe(
+      "Detailed explanation of why this issue is the best fit for the user",
+    ),
   riskLevel: z
     .enum(["low", "medium", "high"])
     .describe("Risk level for the user taking on this issue"),
@@ -91,7 +98,7 @@ export const RecommendIssueOutputSchema = z.object({
         id: z.string(),
         title: z.string(),
         reason: z.string().describe("Why this is a good alternative"),
-      })
+      }),
     )
     .max(2)
     .describe("Up to 2 alternative recommendations"),
@@ -114,9 +121,8 @@ export type IssueAnalysis = z.infer<typeof IssueAnalysisSchema>;
 // AGENT FUNCTION
 // ============================================
 
-
 export async function recommendIssueFlow(
-  input: RecommendIssueInput
+  input: RecommendIssueInput,
 ): Promise<RecommendIssueOutput> {
   const { user, issues } = input;
 
@@ -166,7 +172,7 @@ Be decisive. Pick ONE best issue and explain your reasoning clearly.`;
 - Comments: ${issue.commentCount || 0}
 - URL: ${issue.url}
 - Description: ${issue.body?.slice(0, 500) || "No description"}${issue.body && issue.body.length > 500 ? "..." : ""}
-`
+`,
     )
     .join("\n---\n");
 
@@ -193,9 +199,10 @@ Analyze each issue and provide your recommendation. Respond with ONLY a valid JS
     {"issueId": "id", "difficultyScore": 1-10, "fitScore": 1-10, "reasoning": "brief explanation"}
   ]
 }`;
+  const trackedAI = createTrackedAI("recommend-issue-completion");
 
   // Call OpenAI with Opik tracking
-  const completion = await ai.chat.completions.create({
+  const completion = await trackedAI.chat.completions.create({
     model: DEFAULT_MODEL,
     messages: [
       { role: "system", content: systemPrompt },
