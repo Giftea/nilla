@@ -29,12 +29,13 @@ import {
   Target,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import type { GitHubIssue } from "@/lib/github/api";
 import { CommitDialog } from "@/components/issues/commit-dialog";
-import { IssueRecommendationCard } from "@/components/ai";
+import { IssueRecommendationCard, IssueExplainerDialog } from "@/components/ai";
 import type { Issue as AIIssue, UserProfile } from "@/lib/ai";
 
 export default function IssuesPage() {
@@ -46,6 +47,15 @@ export default function IssuesPage() {
   const [selectedIssue, setSelectedIssue] = useState<{
     issue: GitHubIssue;
     repoFullName: string;
+  } | null>(null);
+  const [explainerDialogOpen, setExplainerDialogOpen] = useState(false);
+  const [explainerIssue, setExplainerIssue] = useState<{
+    title: string;
+    body?: string;
+    labels: string[];
+    repository: string;
+    url: string;
+    repoId?: string;
   } | null>(null);
 
   const ITEMS_PER_PAGE = 10;
@@ -283,7 +293,7 @@ export default function IssuesPage() {
       </Card>
 
       {/* AI Recommendation */}
-      {filteredIssues && filteredIssues.length > 0 && (
+      {/* {filteredIssues && filteredIssues.length > 0 && (
         <IssueRecommendationCard
           input={aiRecommendationInput}
           enabled={!isLoading && !!aiRecommendationInput}
@@ -295,7 +305,7 @@ export default function IssuesPage() {
             }
           }}
         />
-      )}
+      )} */}
 
       {/* Issues List */}
       {!trackedRepos || trackedRepos.length === 0 ? (
@@ -405,6 +415,25 @@ export default function IssuesPage() {
                         View
                       </Button>
                     </a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs sm:text-sm border-violet-500/30 text-violet-600 hover:bg-violet-500/10"
+                      onClick={() => {
+                        setExplainerIssue({
+                          title: issue.title,
+                          body: issue.body || undefined,
+                          labels: issue.labels.map((l: { name: string }) => l.name),
+                          repository: issue.repoFullName,
+                          url: issue.html_url,
+                          repoId: issue.repoId,
+                        });
+                        setExplainerDialogOpen(true);
+                      }}
+                    >
+                      <Sparkles className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
+                      Explain
+                    </Button>
                     <Button
                       size="sm"
                       className={`h-8 text-xs sm:text-sm ${
@@ -516,6 +545,17 @@ export default function IssuesPage() {
           repoFullName={selectedIssue.repoFullName}
         />
       )}
+
+      {/* Issue Explainer Dialog */}
+      <IssueExplainerDialog
+        open={explainerDialogOpen}
+        onOpenChange={setExplainerDialogOpen}
+        issue={explainerIssue}
+        repoId={explainerIssue?.repoId}
+        userExperienceLevel={
+          (user?.user_metadata?.skill_level as "beginner" | "intermediate" | "advanced") || "beginner"
+        }
+      />
     </div>
   );
 }

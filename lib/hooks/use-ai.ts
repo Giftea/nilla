@@ -4,6 +4,7 @@ import type {
   RecommendIssueOutput,
   CommitmentCoachInput,
   CommitmentCoachOutput,
+  IssueExplainerOutput,
 } from "@/lib/ai";
 
 // ============================================
@@ -152,6 +153,56 @@ export function useIssueRecommendationMutation() {
 export function useCommitmentCoachMutation() {
   return useMutation({
     mutationFn: fetchCommitmentCoaching,
+    retry: 1,
+  });
+}
+
+// ============================================
+// ISSUE EXPLAINER
+// ============================================
+
+export interface IssueExplainerInput {
+  issue: {
+    title: string;
+    body?: string;
+    labels: string[];
+    repository: string;
+    url: string;
+  };
+  user: {
+    experienceLevel: "beginner" | "intermediate" | "advanced";
+  };
+  repoId?: string;
+}
+
+async function fetchIssueExplanation(
+  input: IssueExplainerInput
+): Promise<IssueExplainerOutput> {
+  const response = await fetch("/api/ai/explain-issue", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to explain issue");
+  }
+
+  return response.json();
+}
+
+/**
+ * Mutation hook for on-demand issue explanations.
+ * Triggered per-issue when the user clicks "Explain", not auto-fetched.
+ *
+ * @example
+ * const { mutate, isPending, data, error } = useIssueExplainerMutation();
+ * mutate({ issue, user: { experienceLevel: "beginner" }, repoId });
+ */
+export function useIssueExplainerMutation() {
+  return useMutation({
+    mutationFn: fetchIssueExplanation,
     retry: 1,
   });
 }

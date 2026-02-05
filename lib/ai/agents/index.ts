@@ -29,3 +29,15 @@ export {
   type Milestone,
   type RiskLevel,
 } from "./commitment-coach";
+
+export {
+  issueExplainerFlow,
+  IssueExplainerInputSchema,
+  IssueExplainerOutputSchema,
+  ExplainerIssueSchema,
+  ExplainerUserSchema,
+  type IssueExplainerInput,
+  type IssueExplainerOutput,
+  type ExplainerIssue,
+  type ExplainerUser,
+} from "./issue-explainer";
