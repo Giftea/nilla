@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getRepo, parseGitHubUrl, GitHubAPIError } from "@/lib/github/api";
+import { fetchAndIngestRepoDocs } from "@/lib/rag/fetch-repo-docs";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -124,6 +125,18 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Fire-and-forget: fetch repo docs and ingest embeddings for RAG.
+    // This runs in the background — we don't await it so the user
+    // gets an immediate response. Errors are logged inside the function.
+    fetchAndIngestRepoDocs(
+      trackedRepo.id,
+      parsed.owner,
+      parsed.repo,
+      repo.full_name
+    ).catch((err) =>
+      console.error(`[RAG] Background ingestion failed for ${repo.full_name}:`, err)
+    );
 
     return NextResponse.json(trackedRepo, { status: 201 });
   } catch (error) {

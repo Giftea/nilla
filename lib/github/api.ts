@@ -164,6 +164,52 @@ export async function getIssue(
   return githubFetch<GitHubIssue>(`/repos/${owner}/${repo}/issues/${issueNumber}`);
 }
 
+/**
+ * Fetches the raw content of a file from a GitHub repo.
+ * Returns null if the file doesn't exist (404).
+ */
+export async function getRepoFileContent(
+  owner: string,
+  repo: string,
+  path: string
+): Promise<string | null> {
+  try {
+    const data = await githubFetch<{ content: string; encoding: string }>(
+      `/repos/${owner}/${repo}/contents/${path}`
+    );
+    if (data.encoding === "base64") {
+      return Buffer.from(data.content, "base64").toString("utf-8");
+    }
+    return data.content;
+  } catch (error) {
+    if (error instanceof GitHubAPIError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Lists files in a directory of a GitHub repo.
+ * Returns an empty array if the directory doesn't exist.
+ */
+export async function getRepoDirectoryListing(
+  owner: string,
+  repo: string,
+  path: string
+): Promise<Array<{ name: string; path: string; type: string }>> {
+  try {
+    return await githubFetch<Array<{ name: string; path: string; type: string }>>(
+      `/repos/${owner}/${repo}/contents/${path}`
+    );
+  } catch (error) {
+    if (error instanceof GitHubAPIError && error.status === 404) {
+      return [];
+    }
+    throw error;
+  }
+}
+
 // Parse GitHub URL to extract owner and repo
 export function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
   const patterns = [

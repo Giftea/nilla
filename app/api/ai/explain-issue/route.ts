@@ -39,14 +39,20 @@ export async function POST(request: NextRequest) {
     // If a repo ID is provided, retrieve relevant documentation context
     let repoContext: string | undefined;
     if (repoId) {
+      console.log(`[Explain] Retrieving RAG context for repo ${repoId}`);
       const retrieval = await retrieveRepoContext(
         repoId,
         issue.title,
         issue.body
       );
+      console.log(
+        `[Explain] RAG result: ${retrieval.chunks.length} chunks, empty=${retrieval.empty}`
+      );
       if (!retrieval.empty) {
         repoContext = retrieval.contextText;
       }
+    } else {
+      console.log("[Explain] No repoId provided, skipping RAG retrieval");
     }
 
     // Run the issue explainer agent
