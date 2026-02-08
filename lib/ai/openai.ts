@@ -21,11 +21,17 @@ export const DEFAULT_MODEL = "gpt-4o";
 export type ChatMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
 // Create a tracked OpenAI client nested under a parent trace or span
-export function createTrackedAI(
-  generationName?: string
-) {
-  return trackOpenAI(openai, { client: opik, generationName });
+export function createTrackedAI(generationName?: string, parent?: Trace | Span) {
+  return trackOpenAI(openai, { client: opik, generationName, parent });
 }
+
+// Create a parent trace for agentic workflows
+export function createAgentTrace(name: string, input?: Record<string, unknown>): Trace {
+  return opik.trace({ name, input });
+}
+
+// Export Trace and Span types for use in agents
+export type { Trace, Span };
 
 // Helper function to generate chat completions with structured output
 export async function generateCompletion(
