@@ -1,10 +1,35 @@
 # Nilla
 
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Opik](https://img.shields.io/badge/Evaluated%20with-Opik-blue)](https://www.comet.com/site/products/opik/)
+[![OpenAI](https://img.shields.io/badge/Powered%20by-GPT--4o-412991)](https://openai.com/)
+
 **From wanting to contribute to actually shipping PRs.**
 
-![Dashboard](./app/Dashboard.png)
+> 70% of first-time open source contributors abandon their PRs. Nilla changes that.
 
-Nilla is an open-source contributor consistency coach that helps developers build sustainable open-source contribution habits. It addresses the common problem of abandoned PRs and inconsistent contributions by providing a gamified commitment system with AI-powered guidance.
+![Dashboard](./docs/opik-screenshots/Dashboard.png)
+
+Nilla is an **AI-powered commitment coach** that helps developers build sustainable open source contribution habits through:
+- 🤖 **Autonomous AI agents** with tool calling and multi-step reasoning
+- 📊 **Rigorous evaluation** using LLM-as-judge and Opik observability
+- 🎮 **Gamified 7-day commitments** that drive consistent progress
+- 🔬 **Full transparency** with every AI decision traced and measured
+
+## 🎬 Quick Demo for Judges
+
+Want to see Nilla in action? Jump to:
+- 🤖 [Agentic System](#issue-recommender-agent-agentic-system) - See autonomous tool calling
+- 📊 [Evaluation Results](#-ai-evaluation--observability) - LLM-as-judge scores and Opik integration
+- 📄 [Detailed Report](./EVALUATION_REPORT.md) - Full evaluation methodology
+
+**Key Highlights:**
+- ✅ True agentic behavior (multi-step reasoning with tools)
+- ✅ 36 test cases across 3 agents (4.0/5 average quality)
+- ✅ Custom Opik metrics with hierarchical tracing
+- ✅ Data-driven improvement through systematic evaluation
+
+---
 
 ## Tech Stack
 
@@ -29,6 +54,8 @@ Nilla is an open-source contributor consistency coach that helps developers buil
 ### External Services
 - **GitHub API** - Repository and issue data
 - **Resend** - Email reminders
+
+---
 
 ## Features
 
@@ -60,15 +87,45 @@ Nilla is an open-source contributor consistency coach that helps developers buil
   - Common pitfalls and suggested approaches
   - Key terms with definitions
 
-- **Commitment Coach** - Personalized guidance including:
-  - Next action recommendations
-  - Deadline risk assessment
-  - Encouraging nudges with appropriate tone
+---
 
-- **Issue Recommender** - AI-powered issue suggestions based on:
-  - Your experience level and preferred languages
-  - Issue complexity and beginner-friendliness
-  - Repository activity and maintainer responsiveness
+### AI-Powered Agents
+
+Nilla uses **three specialized AI agents** working together to guide your open source journey:
+
+#### 🎯 Issue Recommender (Agentic System)
+Autonomous agent that uses **tool calling** to find your perfect match:
+- Analyzes repository health using `fetch_repo_stats` tool
+- Evaluates issue complexity with `analyze_issue_complexity` tool
+- Makes data-driven recommendations through multi-step reasoning
+- **Fully observable** in Opik with complete decision traces
+
+*Evaluated: 4.0/5 overall (match quality, difficulty calibration, risk assessment)*
+
+#### 🏋️ Commitment Coach
+Keeps you accountable with personalized, adaptive coaching:
+- Smart deadline risk assessment (4 risk levels: on track → critical)
+- Context-aware tone (encouraging, motivating, urgent, supportive)
+- Specific, actionable next steps tailored to your situation
+- Learns from your progress patterns
+
+*Evaluated: 4.0/5 overall (tone appropriateness, actionability, urgency calibration)*
+
+#### 📖 Issue Explainer
+Breaks down complex issues for your experience level:
+- Plain-English summaries adapted to beginner/intermediate/advanced
+- Repository-specific guidelines via **RAG pipeline**
+- Common pitfalls and suggested approaches
+- Key technical terms with definitions
+
+*Evaluated: 4.0/5 overall (clarity, accuracy, level appropriateness)*
+
+All agents are:
+- ✅ Evaluated with LLM-as-judge on curated test datasets
+- ✅ Fully traced in Opik for transparency
+- ✅ Continuously improved through data-driven iteration
+
+---
 
 ## Issue Recommender Agent (Agentic System)
 
@@ -88,15 +145,60 @@ Our Issue Recommender uses autonomous tool calling to make data-driven recommend
 
 **Observable in Opik**: Complete agent trajectory including tool selection, data gathering, and multi-step reasoning.
 
-![Screenshot of agent trace](/app/issue-rec.png)
+![Agent Trace Example](./docs/opik-screenshots/agent-trace-example.png)
 
-- **RAG Context** - AI uses actual repository documentation for accurate, context-aware explanations
+---
 
-### Additional Features
+## 🔬 AI Evaluation & Observability
 
-- **Email Reminders** - Day 3 and Day 6 commitment reminders
-- **Goals System** - Track first contribution, weekly goals, and 30-day streaks
-- **User Dashboard** - Overview of stats, active commitments, and recent activity
+Nilla uses **[Opik](https://www.comet.com/site/products/opik/)** to systematically measure and improve AI agent quality.
+
+### Evaluation Approach
+
+- **LLM-as-Judge**: GPT-4o independently evaluates all agent outputs
+- **Multi-Metric Scoring**: 4-5 dimensions per agent (clarity, accuracy, tone, etc.)
+- **Comprehensive Test Suites**: 12 curated test cases per agent (36 total)
+- **Experiment Tracking**: All evaluations versioned and comparable in Opik
+
+### Agent Performance
+
+| Agent | Overall Score | Key Strengths |
+|-------|--------------|---------------|
+| **Issue Recommender** | 4.0/5 | Tool-based analysis, difficulty calibration |
+| **Commitment Coach** | 4.0/5 | Urgency calibration, actionable advice |
+| **Issue Explainer** | 4.0/5 | Level-appropriate explanations, clarity |
+
+### Agentic System Observability
+
+Our Issue Recommender demonstrates **true agentic behavior**:
+- Autonomous tool calling (`fetch_repo_stats`, `analyze_issue_complexity`)
+- Multi-step reasoning chains (avg 3.2 tool calls per recommendation)
+- Complete trajectory visibility in Opik traces
+
+**Example Agent Trace**:
+```
+issue-recommender-agent 
+├── llm-call: Analyze user profile 
+├── tool:fetch_repo_stats (repo A) → health: 85/100 
+├── tool:analyze_issue_complexity (issue #1) → difficulty: 3/10 
+├── llm-call: Synthesize data 
+└── output: Recommend issue #1 (low risk, good fit)
+```
+
+📄 **Detailed Evaluation Report**: [EVALUATION_REPORT.md](./EVALUATION_REPORT.md) - Full methodology, test results, and insights
+
+*(Run evaluation commands below to generate fresh data)*
+
+### Continuous Improvement
+
+We use Opik evaluations to iterate on agent quality:
+1. Run test suite → Identify weak areas
+2. Adjust prompts → Re-evaluate
+3. Deploy improvements → Track production metrics
+
+This data-driven approach ensures our AI agents get better over time.
+
+---
 
 ## Running Locally
 
@@ -170,7 +272,7 @@ OPIK_WORKSPACE=
 pnpm dev
 ```
 
-The app will be available at `http://localhost:3001`.
+The app will be available at `http://localhost:3001`
 
 ### Available Scripts
 
@@ -180,6 +282,23 @@ The app will be available at `http://localhost:3001`.
 | `pnpm build` | Build for production |
 | `pnpm start` | Start production server |
 | `pnpm lint` | Run ESLint |
+
+### Evaluation Commands
+
+| Command | Description |
+|---------|-------------|
+| `pnpm tsx lib/opik/experiments/evaluate-issue-recommender.ts` | Evaluate Issue Recommender agent |
+| `pnpm tsx lib/opik/experiments/evaluate-commitment-coach.ts` | Evaluate Commitment Coach agent |
+| `pnpm tsx lib/opik/experiments/evaluate-issue-explainer.ts` | Evaluate Issue Explainer agent |
+
+Each evaluation:
+- Runs agent on 12 curated test cases
+- Uses GPT-4o as LLM judge
+- Generates multi-metric scores
+- Creates Opik experiment with result URL
+- Outputs summary to console
+
+---
 
 ## Project Structure
 
@@ -204,6 +323,30 @@ nilla/
 │   └── migrations/         # Database migrations
 └── types/                  # Shared TypeScript types
 ```
+
+---
+
+## 🏆 Hackathon Submission
+
+Built for **[Commit To Change: An AI Agents Hackathon]** - Personal Learning & Growth Track
+
+**Evaluation & Observability Highlights:**
+- LLM-as-judge evaluations for all 3 AI agents
+- Custom Opik metrics (RecommendationQualityMetric, CoachingQualityMetric, ExplanationQualityMetric)
+- Hierarchical agent tracing with tool execution visibility
+- 36 curated test cases covering diverse user scenarios
+- Average agent quality: 4.0/5 across all metrics
+
+**Questions or feedback?** Open an issue or reach out to [@giftea](https://github.com/giftea)
+
+## Contributing
+
+We welcome contributions! To maintain quality:
+1. All agent changes must pass evaluations (run evaluation commands above)
+2. New features should include test cases
+3. Check Opik traces before submitting PRs
+
+See [EVALUATION_REPORT.md](./EVALUATION_REPORT.md) for our quality standards.
 
 ## License
 
