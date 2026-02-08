@@ -1,16 +1,3 @@
-/**
- * LLM-as-Judge Evaluation Runner for Nilla AI Agents
- *
- * This script runs comprehensive evaluations of all three AI agents:
- * - Issue Recommender
- * - Commitment Coach
- * - Issue Explainer
- *
- * Each agent is tested against curated test cases and judged by GPT-4o.
- * Results are logged to Opik for visualization and tracking.
- *
- * Usage: npx tsx scripts/run-evaluations.ts
- */
 
 import { Opik } from "opik";
 import {
@@ -50,7 +37,7 @@ interface EvaluationResult<T> {
   durationMs: number;
 }
 
-interface AgentEvaluationSummary {
+ export interface AgentEvaluationSummary {
   agentName: string;
   totalTests: number;
   averageScores: Record<string, number>;

@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "eval": "npx tsx scripts/run-evaluations.ts",
-    "eval:recommender": "npx tsx -e \"import('./scripts/run-evaluations').then(m => m.evaluateIssueRecommender())\"",
-    "eval:coach": "npx tsx -e \"import('./scripts/run-evaluations').then(m => m.evaluateCommitmentCoach())\"",
-    "eval:explainer": "npx tsx -e \"import('./scripts/run-evaluations').then(m => m.evaluateIssueExplainer())\""
+    "eval:coach": "npx tsx scripts/eval-commitment-coach.ts",
+    "eval:recommender": "npx tsx scripts/eval-issue-recommender.ts",
+    "eval:explainer": "npx tsx scripts/eval-issue-explainer.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.0",
