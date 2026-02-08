@@ -304,24 +304,57 @@ Each evaluation:
 
 ```
 nilla/
-├── app/                    # Next.js App Router
-│   ├── (auth)/             # Auth routes (login, onboarding, callback)
-│   ├── (dashboard)/        # Protected routes (dashboard, repos, issues, etc.)
-│   └── api/                # API routes (GitHub, AI, RAG, cron)
-├── components/             # React components
-│   ├── ui/                 # Base UI components (Radix-based)
-│   ├── layout/             # Navbar, sidebar, mobile nav
-│   ├── ai/                 # AI feature components
-│   └── issues/             # Issue-related components
-├── lib/                    # Core business logic
-│   ├── ai/                 # AI agents and OpenAI setup
-│   ├── rag/                # RAG system (ingest, retrieve)
-│   ├── github/             # GitHub API wrapper
-│   ├── supabase/           # Supabase clients
-│   └── hooks/              # React hooks
+├── app/                          # Next.js App Router
+│   ├── (auth)/                   # Auth routes
+│   │   ├── callback/             # OAuth callback handler
+│   │   ├── login/                # Login page
+│   │   └── onboarding/           # User onboarding flow
+│   ├── (dashboard)/              # Protected routes
+│   │   ├── commitments/          # Commitment management
+│   │   ├── dashboard/            # Main dashboard
+│   │   ├── issues/               # Issue browsing
+│   │   ├── profile/              # User profile & badges
+│   │   └── repos/                # Repository management
+│   └── api/                      # API routes
+│       ├── ai/                   # AI agent endpoints
+│       │   ├── commitment-coach/ # Coaching API
+│       │   ├── explain-issue/    # Issue explainer API
+│       │   └── recommend-issue/  # Issue recommender API
+│       ├── cron/                 # Scheduled jobs
+│       │   └── reminders/        # Email reminder cron
+│       ├── github/               # GitHub API proxy
+│       │   ├── issues/           # Issue fetching
+│       │   ├── repos/            # Repository data
+│       │   ├── search/           # Repository search
+│       │   └── starred/          # Starred repos
+│       └── rag/                  # RAG pipeline
+│           ├── backfill/         # Backfill embeddings
+│           └── ingest/           # Ingest repo docs
+├── components/                   # React components
+│   ├── ai/                       # AI feature components
+│   ├── issues/                   # Issue-related components
+│   ├── layout/                   # Navbar, sidebar, mobile nav
+│   ├── profile/                  # Profile & badge components
+│   └── ui/                       # Base UI components (Radix-based)
+├── docs/                         # Documentation assets
+│   └── opik-screenshots/         # Opik dashboard screenshots
+├── lib/                          # Core business logic
+│   ├── ai/                       # AI integration
+│   │   └── agents/               # Agent implementations
+│   ├── constants/                # App constants
+│   │   └── ai/                   # AI-related constants
+│   ├── email/                    # Email service (Resend)
+│   ├── github/                   # GitHub API wrapper
+│   ├── hooks/                    # React hooks
+│   ├── opik/                     # Opik observability
+│   │   ├── evaluations/          # Custom evaluation metrics
+│   │   └── experiments/          # Agent experiment scripts
+│   ├── rag/                      # RAG system (ingest, retrieve)
+│   ├── supabase/                 # Supabase clients
+│   └── utils/                    # Utility functions
 ├── supabase/
-│   └── migrations/         # Database migrations
-└── types/                  # Shared TypeScript types
+│   └── migrations/               # Database migrations
+└── types/                        # Shared TypeScript types
 ```
 
 ---
