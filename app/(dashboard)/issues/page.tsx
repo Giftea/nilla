@@ -293,7 +293,7 @@ export default function IssuesPage() {
       </Card>
 
       {/* AI Recommendation */}
-      {/* {filteredIssues && filteredIssues.length > 0 && (
+      {filteredIssues && filteredIssues.length > 0 && (
         <IssueRecommendationCard
           input={aiRecommendationInput}
           enabled={!isLoading && !!aiRecommendationInput}
@@ -305,7 +305,7 @@ export default function IssuesPage() {
             }
           }}
         />
-      )} */}
+      )}
 
       {/* Issues List */}
       {!trackedRepos || trackedRepos.length === 0 ? (
