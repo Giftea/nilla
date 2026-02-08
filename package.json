@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "eval": "npx tsx scripts/run-evaluations.ts",
-    "experiment:coach": "npx tsx experiments/commitment-coach.ts",
-    "experiment:recommender": "npx tsx experiments/issue-recommender.ts",
-    "experiment:explainer": "npx tsx experiments/issue-explainer.ts"
+    "experiment:coach": "npx tsx lib/opik/experiments/commitment-coach.ts",
+    "experiment:recommender": "npx tsx lib/opik/experiments/issue-recommender.ts",
+    "experiment:explainer": "npx tsx lib/opik/experiments/issue-explainer.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.0",

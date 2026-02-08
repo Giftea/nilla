@@ -70,6 +70,26 @@ Nilla is an open-source contributor consistency coach that helps developers buil
   - Issue complexity and beginner-friendliness
   - Repository activity and maintainer responsiveness
 
+## Issue Recommender Agent (Agentic System)
+
+Our Issue Recommender uses autonomous tool calling to make data-driven recommendations:
+
+**Tools Available**:
+- `fetch_repo_stats`: Analyzes repository health (stars, activity, maintainer responsiveness)
+- `analyze_issue_complexity`: Evaluates issue difficulty based on labels, description, and context
+
+**Agentic Workflow**:
+1. Agent analyzes user profile (skill level, languages, interests)
+2. **Autonomously decides** which repositories to investigate
+3. Calls `fetch_repo_stats` for promising repos
+4. Calls `analyze_issue_complexity` for suitable issues
+5. Synthesizes gathered data across multiple reasoning steps
+6. Provides final recommendation with detailed justification
+
+**Observable in Opik**: Complete agent trajectory including tool selection, data gathering, and multi-step reasoning.
+
+![Screenshot of agent trace](/app/issue-rec.png)
+
 - **RAG Context** - AI uses actual repository documentation for accurate, context-aware explanations
 
 ### Additional Features

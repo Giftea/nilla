@@ -1,13 +1,12 @@
-
 import { Opik } from "opik";
 import {
   issueRecommenderTestCases,
   commitmentCoachTestCases,
   issueExplainerTestCases,
-} from "../lib/opik/evaluations/datasets";
-import { recommendIssueFlow } from "../lib/ai/agents/recommend-issue";
-import { commitmentCoachFlow } from "../lib/ai/agents/commitment-coach";
-import { issueExplainerFlow } from "../lib/ai/agents/issue-explainer";
+} from "../evaluations/datasets";
+import { recommendIssueFlow } from "../../ai/agents/recommend-issue";
+import { commitmentCoachFlow } from "../../ai/agents/commitment-coach";
+import { issueExplainerFlow } from "../../ai/agents/issue-explainer";
 import {
   judgeIssueRecommendation,
   judgeCoachingQuality,
@@ -16,7 +15,7 @@ import {
   type IssueRecommenderJudgeResult,
   type CommitmentCoachJudgeResult,
   type IssueExplainerJudgeResult,
-} from "../lib/opik/evaluations/judges";
+} from "../evaluations/judges";
 
 // ============================================
 // CONFIGURATION
@@ -37,7 +36,7 @@ interface EvaluationResult<T> {
   durationMs: number;
 }
 
- export interface AgentEvaluationSummary {
+export interface AgentEvaluationSummary {
   agentName: string;
   totalTests: number;
   averageScores: Record<string, number>;
@@ -59,7 +58,9 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
 
   for (let i = 0; i < issueRecommenderTestCases.length; i++) {
     const testCase = issueRecommenderTestCases[i];
-    console.log(`\n[${i + 1}/${issueRecommenderTestCases.length}] ${testCase.name}`);
+    console.log(
+      `\n[${i + 1}/${issueRecommenderTestCases.length}] ${testCase.name}`,
+    );
 
     const startTime = Date.now();
 
@@ -71,7 +72,7 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
       const scores = await judgeIssueRecommendation(
         testCase.input,
         output,
-        testCase.expectedBehavior
+        testCase.expectedBehavior,
       );
 
       const durationMs = Date.now() - startTime;
@@ -83,7 +84,12 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
           testName: testCase.name,
           expectedBehavior: testCase.expectedBehavior,
           user: testCase.input.user,
-          issues: testCase.input.issues.map(i => ({ id: i.id, title: i.title, labels: i.labels, language: i.language })),
+          issues: testCase.input.issues.map((i) => ({
+            id: i.id,
+            title: i.title,
+            labels: i.labels,
+            language: i.language,
+          })),
         },
         output: {
           recommendedIssue: output.recommendedIssue,
@@ -97,11 +103,32 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
       });
 
       // Log scores as feedback
-      trace.score({ name: "match_quality", value: scores.matchQuality, categoryName: "issue-recommender", reason: scores.reasoning });
-      trace.score({ name: "difficulty_calibration", value: scores.difficultyCalibration, categoryName: "issue-recommender" });
-      trace.score({ name: "explanation_clarity", value: scores.explanationClarity, categoryName: "issue-recommender" });
-      trace.score({ name: "risk_assessment", value: scores.riskAssessment, categoryName: "issue-recommender" });
-      trace.score({ name: "overall_score", value: scores.overallScore, categoryName: "issue-recommender" });
+      trace.score({
+        name: "match_quality",
+        value: scores.matchQuality,
+        categoryName: "issue-recommender",
+        reason: scores.reasoning,
+      });
+      trace.score({
+        name: "difficulty_calibration",
+        value: scores.difficultyCalibration,
+        categoryName: "issue-recommender",
+      });
+      trace.score({
+        name: "explanation_clarity",
+        value: scores.explanationClarity,
+        categoryName: "issue-recommender",
+      });
+      trace.score({
+        name: "risk_assessment",
+        value: scores.riskAssessment,
+        categoryName: "issue-recommender",
+      });
+      trace.score({
+        name: "overall_score",
+        value: scores.overallScore,
+        categoryName: "issue-recommender",
+      });
 
       trace.end();
 
@@ -112,9 +139,14 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
         durationMs,
       });
 
-      const scoreEmoji = scores.overallScore >= 4 ? "✅" : scores.overallScore >= 3 ? "⚠️" : "❌";
+      const scoreEmoji =
+        scores.overallScore >= 4
+          ? "✅"
+          : scores.overallScore >= 3
+            ? "⚠️"
+            : "❌";
       console.log(
-        `   ${scoreEmoji} Score: ${scores.overallScore}/5 | Match: ${scores.matchQuality} | Difficulty: ${scores.difficultyCalibration} | Clarity: ${scores.explanationClarity}`
+        `   ${scoreEmoji} Score: ${scores.overallScore}/5 | Match: ${scores.matchQuality} | Difficulty: ${scores.difficultyCalibration} | Clarity: ${scores.explanationClarity}`,
       );
       console.log(`   📝 ${scores.reasoning}`);
     } catch (error) {
@@ -135,14 +167,18 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
     }
   }
 
-  const averageScores = calculateAverageScores(results.map((r) => r.scores  as unknown as Record<string, string | number>));
+  const averageScores = calculateAverageScores(
+    results.map((r) => r.scores as unknown as Record<string, string | number>),
+  );
   const totalDurationMs = results.reduce((sum, r) => sum + r.durationMs, 0);
 
   console.log("\n" + "-".repeat(40));
   console.log("📊 ISSUE RECOMMENDER SUMMARY");
   console.log(`   Average Overall Score: ${averageScores.overallScore}/5`);
   console.log(`   Match Quality: ${averageScores.matchQuality}/5`);
-  console.log(`   Difficulty Calibration: ${averageScores.difficultyCalibration}/5`);
+  console.log(
+    `   Difficulty Calibration: ${averageScores.difficultyCalibration}/5`,
+  );
   console.log(`   Explanation Clarity: ${averageScores.explanationClarity}/5`);
   console.log(`   Risk Assessment: ${averageScores.riskAssessment}/5`);
   console.log(`   Total Duration: ${(totalDurationMs / 1000).toFixed(1)}s`);
@@ -170,7 +206,9 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
 
   for (let i = 0; i < commitmentCoachTestCases.length; i++) {
     const testCase = commitmentCoachTestCases[i];
-    console.log(`\n[${i + 1}/${commitmentCoachTestCases.length}] ${testCase.name}`);
+    console.log(
+      `\n[${i + 1}/${commitmentCoachTestCases.length}] ${testCase.name}`,
+    );
 
     const startTime = Date.now();
 
@@ -182,7 +220,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
       const scores = await judgeCoachingQuality(
         testCase.input,
         output,
-        testCase.expectedBehavior
+        testCase.expectedBehavior,
       );
 
       const durationMs = Date.now() - startTime;
@@ -207,11 +245,32 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
       });
 
       // Log scores as feedback
-      trace.score({ name: "tone_appropriateness", value: scores.toneAppropriateness, categoryName: "commitment-coach", reason: scores.reasoning });
-      trace.score({ name: "actionability", value: scores.actionability, categoryName: "commitment-coach" });
-      trace.score({ name: "risk_accuracy", value: scores.riskAccuracy, categoryName: "commitment-coach" });
-      trace.score({ name: "urgency_calibration", value: scores.urgencyCalibration, categoryName: "commitment-coach" });
-      trace.score({ name: "overall_score", value: scores.overallScore, categoryName: "commitment-coach" });
+      trace.score({
+        name: "tone_appropriateness",
+        value: scores.toneAppropriateness,
+        categoryName: "commitment-coach",
+        reason: scores.reasoning,
+      });
+      trace.score({
+        name: "actionability",
+        value: scores.actionability,
+        categoryName: "commitment-coach",
+      });
+      trace.score({
+        name: "risk_accuracy",
+        value: scores.riskAccuracy,
+        categoryName: "commitment-coach",
+      });
+      trace.score({
+        name: "urgency_calibration",
+        value: scores.urgencyCalibration,
+        categoryName: "commitment-coach",
+      });
+      trace.score({
+        name: "overall_score",
+        value: scores.overallScore,
+        categoryName: "commitment-coach",
+      });
 
       trace.end();
 
@@ -222,9 +281,14 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
         durationMs,
       });
 
-      const scoreEmoji = scores.overallScore >= 4 ? "✅" : scores.overallScore >= 3 ? "⚠️" : "❌";
+      const scoreEmoji =
+        scores.overallScore >= 4
+          ? "✅"
+          : scores.overallScore >= 3
+            ? "⚠️"
+            : "❌";
       console.log(
-        `   ${scoreEmoji} Score: ${scores.overallScore}/5 | Tone: ${scores.toneAppropriateness} | Action: ${scores.actionability} | Risk: ${scores.riskAccuracy}`
+        `   ${scoreEmoji} Score: ${scores.overallScore}/5 | Tone: ${scores.toneAppropriateness} | Action: ${scores.actionability} | Risk: ${scores.riskAccuracy}`,
       );
       console.log(`   📝 ${scores.reasoning}`);
     } catch (error) {
@@ -245,13 +309,17 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     }
   }
 
-  const averageScores = calculateAverageScores(results.map((r) => r.scores  as unknown as Record<string, string | number>));
+  const averageScores = calculateAverageScores(
+    results.map((r) => r.scores as unknown as Record<string, string | number>),
+  );
   const totalDurationMs = results.reduce((sum, r) => sum + r.durationMs, 0);
 
   console.log("\n" + "-".repeat(40));
   console.log("📊 COMMITMENT COACH SUMMARY");
   console.log(`   Average Overall Score: ${averageScores.overallScore}/5`);
-  console.log(`   Tone Appropriateness: ${averageScores.toneAppropriateness}/5`);
+  console.log(
+    `   Tone Appropriateness: ${averageScores.toneAppropriateness}/5`,
+  );
   console.log(`   Actionability: ${averageScores.actionability}/5`);
   console.log(`   Risk Accuracy: ${averageScores.riskAccuracy}/5`);
   console.log(`   Urgency Calibration: ${averageScores.urgencyCalibration}/5`);
@@ -280,7 +348,9 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
 
   for (let i = 0; i < issueExplainerTestCases.length; i++) {
     const testCase = issueExplainerTestCases[i];
-    console.log(`\n[${i + 1}/${issueExplainerTestCases.length}] ${testCase.name}`);
+    console.log(
+      `\n[${i + 1}/${issueExplainerTestCases.length}] ${testCase.name}`,
+    );
 
     const startTime = Date.now();
 
@@ -292,7 +362,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
       const scores = await judgeExplanationQuality(
         testCase.input,
         output,
-        testCase.expectedBehavior
+        testCase.expectedBehavior,
       );
 
       const durationMs = Date.now() - startTime;
@@ -320,11 +390,32 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
       });
 
       // Log scores as feedback
-      trace.score({ name: "clarity", value: scores.clarity, categoryName: "issue-explainer", reason: scores.reasoning });
-      trace.score({ name: "accuracy", value: scores.accuracy, categoryName: "issue-explainer" });
-      trace.score({ name: "level_appropriateness", value: scores.levelAppropriateness, categoryName: "issue-explainer" });
-      trace.score({ name: "actionability", value: scores.actionability, categoryName: "issue-explainer" });
-      trace.score({ name: "overall_score", value: scores.overallScore, categoryName: "issue-explainer" });
+      trace.score({
+        name: "clarity",
+        value: scores.clarity,
+        categoryName: "issue-explainer",
+        reason: scores.reasoning,
+      });
+      trace.score({
+        name: "accuracy",
+        value: scores.accuracy,
+        categoryName: "issue-explainer",
+      });
+      trace.score({
+        name: "level_appropriateness",
+        value: scores.levelAppropriateness,
+        categoryName: "issue-explainer",
+      });
+      trace.score({
+        name: "actionability",
+        value: scores.actionability,
+        categoryName: "issue-explainer",
+      });
+      trace.score({
+        name: "overall_score",
+        value: scores.overallScore,
+        categoryName: "issue-explainer",
+      });
 
       trace.end();
 
@@ -335,9 +426,14 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
         durationMs,
       });
 
-      const scoreEmoji = scores.overallScore >= 4 ? "✅" : scores.overallScore >= 3 ? "⚠️" : "❌";
+      const scoreEmoji =
+        scores.overallScore >= 4
+          ? "✅"
+          : scores.overallScore >= 3
+            ? "⚠️"
+            : "❌";
       console.log(
-        `   ${scoreEmoji} Score: ${scores.overallScore}/5 | Clarity: ${scores.clarity} | Level: ${scores.levelAppropriateness} | Action: ${scores.actionability}`
+        `   ${scoreEmoji} Score: ${scores.overallScore}/5 | Clarity: ${scores.clarity} | Level: ${scores.levelAppropriateness} | Action: ${scores.actionability}`,
       );
       console.log(`   📝 ${scores.reasoning}`);
     } catch (error) {
@@ -358,7 +454,9 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
     }
   }
 
-  const averageScores = calculateAverageScores(results.map((r) => r.scores  as unknown as Record<string, string | number>));
+  const averageScores = calculateAverageScores(
+    results.map((r) => r.scores as unknown as Record<string, string | number>),
+  );
   const totalDurationMs = results.reduce((sum, r) => sum + r.durationMs, 0);
 
   console.log("\n" + "-".repeat(40));
@@ -366,7 +464,9 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   console.log(`   Average Overall Score: ${averageScores.overallScore}/5`);
   console.log(`   Clarity: ${averageScores.clarity}/5`);
   console.log(`   Accuracy: ${averageScores.accuracy}/5`);
-  console.log(`   Level Appropriateness: ${averageScores.levelAppropriateness}/5`);
+  console.log(
+    `   Level Appropriateness: ${averageScores.levelAppropriateness}/5`,
+  );
   console.log(`   Actionability: ${averageScores.actionability}/5`);
   console.log(`   Total Duration: ${(totalDurationMs / 1000).toFixed(1)}s`);
 
@@ -390,7 +490,9 @@ async function main() {
   console.log("║     LLM-as-Judge Evaluation with Opik Tracing              ║");
   console.log("╚════════════════════════════════════════════════════════════╝");
   console.log(`\n📅 Timestamp: ${timestamp}`);
-  console.log(`📊 Test Cases: ${issueRecommenderTestCases.length + commitmentCoachTestCases.length + issueExplainerTestCases.length} total`);
+  console.log(
+    `📊 Test Cases: ${issueRecommenderTestCases.length + commitmentCoachTestCases.length + issueExplainerTestCases.length} total`,
+  );
 
   const startTime = Date.now();
 
@@ -409,19 +511,36 @@ async function main() {
   console.log("╔════════════════════════════════════════════════════════════╗");
   console.log("║                    📊 FINAL RESULTS                        ║");
   console.log("╠════════════════════════════════════════════════════════════╣");
-  console.log(`║  Issue Recommender:  ${issueRecResults.averageScores.overallScore?.toFixed(2) || "N/A"}/5  (${issueRecResults.totalTests} tests)`.padEnd(61) + "║");
-  console.log(`║  Commitment Coach:   ${coachResults.averageScores.overallScore?.toFixed(2) || "N/A"}/5  (${coachResults.totalTests} tests)`.padEnd(61) + "║");
-  console.log(`║  Issue Explainer:    ${explainerResults.averageScores.overallScore?.toFixed(2) || "N/A"}/5  (${explainerResults.totalTests} tests)`.padEnd(61) + "║");
+  console.log(
+    `║  Issue Recommender:  ${issueRecResults.averageScores.overallScore?.toFixed(2) || "N/A"}/5  (${issueRecResults.totalTests} tests)`.padEnd(
+      61,
+    ) + "║",
+  );
+  console.log(
+    `║  Commitment Coach:   ${coachResults.averageScores.overallScore?.toFixed(2) || "N/A"}/5  (${coachResults.totalTests} tests)`.padEnd(
+      61,
+    ) + "║",
+  );
+  console.log(
+    `║  Issue Explainer:    ${explainerResults.averageScores.overallScore?.toFixed(2) || "N/A"}/5  (${explainerResults.totalTests} tests)`.padEnd(
+      61,
+    ) + "║",
+  );
   console.log("╠════════════════════════════════════════════════════════════╣");
 
-  const overallAverage = (
-    (issueRecResults.averageScores.overallScore || 0) +
-    (coachResults.averageScores.overallScore || 0) +
-    (explainerResults.averageScores.overallScore || 0)
-  ) / 3;
+  const overallAverage =
+    ((issueRecResults.averageScores.overallScore || 0) +
+      (coachResults.averageScores.overallScore || 0) +
+      (explainerResults.averageScores.overallScore || 0)) /
+    3;
 
-  console.log(`║  Overall Average:    ${overallAverage.toFixed(2)}/5`.padEnd(61) + "║");
-  console.log(`║  Total Duration:     ${(totalDuration / 1000).toFixed(1)}s`.padEnd(61) + "║");
+  console.log(
+    `║  Overall Average:    ${overallAverage.toFixed(2)}/5`.padEnd(61) + "║",
+  );
+  console.log(
+    `║  Total Duration:     ${(totalDuration / 1000).toFixed(1)}s`.padEnd(61) +
+      "║",
+  );
   console.log("╚════════════════════════════════════════════════════════════╝");
 
   console.log("\n✅ Evaluations complete!");

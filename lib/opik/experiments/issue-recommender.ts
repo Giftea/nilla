@@ -1,13 +1,17 @@
-import {
-  issueRecommenderTestCases,
-} from "../lib/opik/evaluations/datasets";
-import { recommendIssueFlow } from "../lib/ai/agents/recommend-issue";
+import { issueRecommenderTestCases } from "../evaluations/datasets";
+import { recommendIssueFlow } from "../../ai/agents/recommend-issue";
 import {
   judgeIssueRecommendation,
   calculateAverageScores,
   type IssueRecommenderJudgeResult,
-} from "../lib/opik/evaluations/judges";
-import { evaluate, EvaluationTask, Opik, BaseMetric, EvaluationScoreResult } from "opik";
+} from "../evaluations/judges";
+import {
+  evaluate,
+  EvaluationTask,
+  Opik,
+  BaseMetric,
+  EvaluationScoreResult,
+} from "opik";
 
 const EXPERIMENT_PREFIX = "nilla-eval";
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -41,46 +45,64 @@ const recommendationQualityValidationSchema = z.object({
       pastContributions: z.number().default(0),
       availableHoursPerWeek: z.number().optional(),
     }),
-    issues: z.array(z.object({
-      id: z.string(),
-      title: z.string(),
-      body: z.string().optional(),
-      labels: z.array(z.string()),
-      repository: z.string(),
-      language: z.string().optional(),
-      openedAt: z.string().optional(),
-      commentCount: z.number().default(0),
-      url: z.string(),
-    })),
+    issues: z.array(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        body: z.string().optional(),
+        labels: z.array(z.string()),
+        repository: z.string(),
+        language: z.string().optional(),
+        openedAt: z.string().optional(),
+        commentCount: z.number().default(0),
+        url: z.string(),
+      }),
+    ),
   }),
-  output: z.object({
-    recommendedIssue: z.any().optional(),
-    explanation: z.any().optional(),
-    riskLevel: z.any().optional(),
-    riskFactors: z.any().optional(),
-    alternativeIssues: z.any().optional(),
-    rankedIssues: z.any().optional(),
-  }).optional(),
+  output: z
+    .object({
+      recommendedIssue: z.any().optional(),
+      explanation: z.any().optional(),
+      riskLevel: z.any().optional(),
+      riskFactors: z.any().optional(),
+      alternativeIssues: z.any().optional(),
+      rankedIssues: z.any().optional(),
+    })
+    .optional(),
   expectedBehavior: z.string(),
 });
 
-type RecommendationQualityInput = z.infer<typeof recommendationQualityValidationSchema>;
+type RecommendationQualityInput = z.infer<
+  typeof recommendationQualityValidationSchema
+>;
 
-class RecommendationQualityMetric extends BaseMetric<typeof recommendationQualityValidationSchema> {
+class RecommendationQualityMetric extends BaseMetric<
+  typeof recommendationQualityValidationSchema
+> {
   public readonly validationSchema = recommendationQualityValidationSchema;
 
   constructor(name = "recommendation_quality", trackMetric = true) {
     super(name, trackMetric);
   }
 
-  async score(input: RecommendationQualityInput): Promise<EvaluationScoreResult[]> {
+  async score(
+    input: RecommendationQualityInput,
+  ): Promise<EvaluationScoreResult[]> {
     const { input: testInput, output, expectedBehavior } = input;
 
     if (!output) {
       return [
         { name: "match_quality", value: 0, reason: "No output to evaluate" },
-        { name: "difficulty_calibration", value: 0, reason: "No output to evaluate" },
-        { name: "explanation_clarity", value: 0, reason: "No output to evaluate" },
+        {
+          name: "difficulty_calibration",
+          value: 0,
+          reason: "No output to evaluate",
+        },
+        {
+          name: "explanation_clarity",
+          value: 0,
+          reason: "No output to evaluate",
+        },
         { name: "risk_assessment", value: 0, reason: "No output to evaluate" },
         { name: "overall_score", value: 0, reason: "No output to evaluate" },
       ];
@@ -91,7 +113,7 @@ class RecommendationQualityMetric extends BaseMetric<typeof recommendationQualit
       const scores = await judgeIssueRecommendation(
         testInput,
         output as any,
-        expectedBehavior
+        expectedBehavior,
       );
 
       return [
@@ -175,9 +197,10 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
   const opikClient = new Opik();
 
   // Create or get dataset
-  const dataset = await opikClient.getOrCreateDataset<IssueRecommenderDatasetItem>(
-    "issue-recommender-test-cases"
-  );
+  const dataset =
+    await opikClient.getOrCreateDataset<IssueRecommenderDatasetItem>(
+      "issue-recommender-test-cases",
+    );
 
   // Insert test cases into dataset (Opik automatically deduplicates)
   const datasetItems = issueRecommenderTestCases.map((testCase, index) => ({
@@ -193,7 +216,9 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
   await dataset.insert(datasetItems);
 
   // Define the evaluation task
-  const evaluationTask: EvaluationTask<IssueRecommenderDatasetItem> = async (datasetItem) => {
+  const evaluationTask: EvaluationTask<IssueRecommenderDatasetItem> = async (
+    datasetItem,
+  ) => {
     console.log(`\nEvaluating: ${datasetItem.name}`);
 
     const startTime = Date.now();
@@ -260,16 +285,25 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
 
   for (const testResult of evaluationResult.testResults) {
     const scoreResults = testResult.scoreResults;
-    const metadata = testResult.testCase.taskOutput?.metadata as { durationMs?: number; testName?: string } | undefined;
+    const metadata = testResult.testCase.taskOutput?.metadata as
+      | { durationMs?: number; testName?: string }
+      | undefined;
 
     // Extract scores from the evaluation results
     const scores = {
-      matchQuality: scoreResults.find(s => s.name === "match_quality")?.value || 0,
-      difficultyCalibration: scoreResults.find(s => s.name === "difficulty_calibration")?.value || 0,
-      explanationClarity: scoreResults.find(s => s.name === "explanation_clarity")?.value || 0,
-      riskAssessment: scoreResults.find(s => s.name === "risk_assessment")?.value || 0,
-      overallScore: scoreResults.find(s => s.name === "overall_score")?.value || 0,
-      reasoning: scoreResults.find(s => s.name === "match_quality")?.reason || "",
+      matchQuality:
+        scoreResults.find((s) => s.name === "match_quality")?.value || 0,
+      difficultyCalibration:
+        scoreResults.find((s) => s.name === "difficulty_calibration")?.value ||
+        0,
+      explanationClarity:
+        scoreResults.find((s) => s.name === "explanation_clarity")?.value || 0,
+      riskAssessment:
+        scoreResults.find((s) => s.name === "risk_assessment")?.value || 0,
+      overallScore:
+        scoreResults.find((s) => s.name === "overall_score")?.value || 0,
+      reasoning:
+        scoreResults.find((s) => s.name === "match_quality")?.reason || "",
     };
 
     const durationMs = metadata?.durationMs || 0;
@@ -285,14 +319,16 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
 
   // Calculate averages
   const averageScores = calculateAverageScores(
-    results.map((r) => r.scores as unknown as Record<string, string | number>)
+    results.map((r) => r.scores as unknown as Record<string, string | number>),
   );
 
   console.log("\n" + "-".repeat(40));
   console.log("📊 ISSUE RECOMMENDER SUMMARY");
   console.log(`   Average Overall Score: ${averageScores.overallScore}/5`);
   console.log(`   Match Quality: ${averageScores.matchQuality}/5`);
-  console.log(`   Difficulty Calibration: ${averageScores.difficultyCalibration}/5`);
+  console.log(
+    `   Difficulty Calibration: ${averageScores.difficultyCalibration}/5`,
+  );
   console.log(`   Explanation Clarity: ${averageScores.explanationClarity}/5`);
   console.log(`   Risk Assessment: ${averageScores.riskAssessment}/5`);
   console.log(`   Total Duration: ${(totalDurationMs / 1000).toFixed(1)}s`);

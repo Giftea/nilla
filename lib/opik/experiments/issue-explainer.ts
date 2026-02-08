@@ -1,13 +1,17 @@
-import {
-  issueExplainerTestCases,
-} from "../lib/opik/evaluations/datasets";
-import { issueExplainerFlow } from "../lib/ai/agents/issue-explainer";
+import { issueExplainerTestCases } from "../evaluations/datasets";
+import { issueExplainerFlow } from "../../ai/agents/issue-explainer";
 import {
   judgeExplanationQuality,
   calculateAverageScores,
   type IssueExplainerJudgeResult,
-} from "../lib/opik/evaluations/judges";
-import { evaluate, EvaluationTask, Opik, BaseMetric, EvaluationScoreResult } from "opik";
+} from "../evaluations/judges";
+import {
+  evaluate,
+  EvaluationTask,
+  Opik,
+  BaseMetric,
+  EvaluationScoreResult,
+} from "opik";
 
 const EXPERIMENT_PREFIX = "nilla-eval";
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -44,35 +48,47 @@ const explanationQualityValidationSchema = z.object({
     }),
     repoContext: z.string().optional(),
   }),
-  output: z.object({
-    summary: z.any().optional(),
-    expectedOutcome: z.any().optional(),
-    repoGuidelines: z.any().optional(),
-    beginnerPitfalls: z.any().optional(),
-    suggestedApproach: z.any().optional(),
-    keyTerms: z.any().optional(),
-    confidenceNote: z.any().optional(),
-  }).optional(),
+  output: z
+    .object({
+      summary: z.any().optional(),
+      expectedOutcome: z.any().optional(),
+      repoGuidelines: z.any().optional(),
+      beginnerPitfalls: z.any().optional(),
+      suggestedApproach: z.any().optional(),
+      keyTerms: z.any().optional(),
+      confidenceNote: z.any().optional(),
+    })
+    .optional(),
   expectedBehavior: z.string(),
 });
 
-type ExplanationQualityInput = z.infer<typeof explanationQualityValidationSchema>;
+type ExplanationQualityInput = z.infer<
+  typeof explanationQualityValidationSchema
+>;
 
-class ExplanationQualityMetric extends BaseMetric<typeof explanationQualityValidationSchema> {
+class ExplanationQualityMetric extends BaseMetric<
+  typeof explanationQualityValidationSchema
+> {
   public readonly validationSchema = explanationQualityValidationSchema;
 
   constructor(name = "explanation_quality", trackMetric = true) {
     super(name, trackMetric);
   }
 
-  async score(input: ExplanationQualityInput): Promise<EvaluationScoreResult[]> {
+  async score(
+    input: ExplanationQualityInput,
+  ): Promise<EvaluationScoreResult[]> {
     const { input: testInput, output, expectedBehavior } = input;
 
     if (!output) {
       return [
         { name: "clarity", value: 0, reason: "No output to evaluate" },
         { name: "accuracy", value: 0, reason: "No output to evaluate" },
-        { name: "level_appropriateness", value: 0, reason: "No output to evaluate" },
+        {
+          name: "level_appropriateness",
+          value: 0,
+          reason: "No output to evaluate",
+        },
         { name: "actionability", value: 0, reason: "No output to evaluate" },
         { name: "overall_score", value: 0, reason: "No output to evaluate" },
       ];
@@ -83,7 +99,7 @@ class ExplanationQualityMetric extends BaseMetric<typeof explanationQualityValid
       const scores = await judgeExplanationQuality(
         testInput,
         output as any,
-        expectedBehavior
+        expectedBehavior,
       );
 
       return [
@@ -168,9 +184,10 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   const opikClient = new Opik();
 
   // Create or get dataset
-  const dataset = await opikClient.getOrCreateDataset<IssueExplainerDatasetItem>(
-    "issue-explainer-test-cases"
-  );
+  const dataset =
+    await opikClient.getOrCreateDataset<IssueExplainerDatasetItem>(
+      "issue-explainer-test-cases",
+    );
 
   // Insert test cases into dataset (Opik automatically deduplicates)
   const datasetItems = issueExplainerTestCases.map((testCase, index) => ({
@@ -186,7 +203,9 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   await dataset.insert(datasetItems);
 
   // Define the evaluation task
-  const evaluationTask: EvaluationTask<IssueExplainerDatasetItem> = async (datasetItem) => {
+  const evaluationTask: EvaluationTask<IssueExplainerDatasetItem> = async (
+    datasetItem,
+  ) => {
     console.log(`\nEvaluating: ${datasetItem.name}`);
 
     const startTime = Date.now();
@@ -254,16 +273,22 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
 
   for (const testResult of evaluationResult.testResults) {
     const scoreResults = testResult.scoreResults;
-    const metadata = testResult.testCase.taskOutput?.metadata as { durationMs?: number; testName?: string } | undefined;
+    const metadata = testResult.testCase.taskOutput?.metadata as
+      | { durationMs?: number; testName?: string }
+      | undefined;
 
     // Extract scores from the evaluation results
     const scores = {
-      clarity: scoreResults.find(s => s.name === "clarity")?.value || 0,
-      accuracy: scoreResults.find(s => s.name === "accuracy")?.value || 0,
-      levelAppropriateness: scoreResults.find(s => s.name === "level_appropriateness")?.value || 0,
-      actionability: scoreResults.find(s => s.name === "actionability")?.value || 0,
-      overallScore: scoreResults.find(s => s.name === "overall_score")?.value || 0,
-      reasoning: scoreResults.find(s => s.name === "clarity")?.reason || "",
+      clarity: scoreResults.find((s) => s.name === "clarity")?.value || 0,
+      accuracy: scoreResults.find((s) => s.name === "accuracy")?.value || 0,
+      levelAppropriateness:
+        scoreResults.find((s) => s.name === "level_appropriateness")?.value ||
+        0,
+      actionability:
+        scoreResults.find((s) => s.name === "actionability")?.value || 0,
+      overallScore:
+        scoreResults.find((s) => s.name === "overall_score")?.value || 0,
+      reasoning: scoreResults.find((s) => s.name === "clarity")?.reason || "",
     };
 
     const durationMs = metadata?.durationMs || 0;
@@ -279,7 +304,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
 
   // Calculate averages
   const averageScores = calculateAverageScores(
-    results.map((r) => r.scores as unknown as Record<string, string | number>)
+    results.map((r) => r.scores as unknown as Record<string, string | number>),
   );
 
   console.log("\n" + "-".repeat(40));
@@ -287,7 +312,9 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   console.log(`   Average Overall Score: ${averageScores.overallScore}/5`);
   console.log(`   Clarity: ${averageScores.clarity}/5`);
   console.log(`   Accuracy: ${averageScores.accuracy}/5`);
-  console.log(`   Level Appropriateness: ${averageScores.levelAppropriateness}/5`);
+  console.log(
+    `   Level Appropriateness: ${averageScores.levelAppropriateness}/5`,
+  );
   console.log(`   Actionability: ${averageScores.actionability}/5`);
   console.log(`   Total Duration: ${(totalDurationMs / 1000).toFixed(1)}s`);
 

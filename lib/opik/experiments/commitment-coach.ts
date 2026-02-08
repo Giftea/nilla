@@ -1,13 +1,21 @@
+import { commitmentCoachTestCases } from "../evaluations/datasets";
 import {
-  commitmentCoachTestCases,
-} from "../lib/opik/evaluations/datasets";
-import { commitmentCoachFlow, CommitmentCoachInput, CommitmentCoachOutput } from "../lib/ai/agents/commitment-coach";
+  commitmentCoachFlow,
+  CommitmentCoachInput,
+  CommitmentCoachOutput,
+} from "../../ai/agents/commitment-coach";
 import {
   judgeCoachingQuality,
   calculateAverageScores,
   type CommitmentCoachJudgeResult,
-} from "../lib/opik/evaluations/judges";
-import { evaluate, EvaluationTask, Opik, BaseMetric, EvaluationScoreResult } from "opik";
+} from "../evaluations/judges";
+import {
+  evaluate,
+  EvaluationTask,
+  Opik,
+  BaseMetric,
+  EvaluationScoreResult,
+} from "opik";
 
 const EXPERIMENT_PREFIX = "nilla-eval";
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -19,7 +27,7 @@ interface EvaluationResult<T> {
   durationMs: number;
 }
 
- export interface AgentEvaluationSummary {
+export interface AgentEvaluationSummary {
   agentName: string;
   totalTests: number;
   averageScores: Record<string, number>;
@@ -35,19 +43,23 @@ const coachingQualityValidationSchema = z.object({
     commitment: z.any(),
     user: z.any(),
   }),
-  output: z.object({
-    nextAction: z.any().optional(),
-    nudge: z.any().optional(),
-    riskAssessment: z.any().optional(),
-    warning: z.any().optional(),
-    progress: z.any().optional(),
-  }).optional(),
+  output: z
+    .object({
+      nextAction: z.any().optional(),
+      nudge: z.any().optional(),
+      riskAssessment: z.any().optional(),
+      warning: z.any().optional(),
+      progress: z.any().optional(),
+    })
+    .optional(),
   expectedBehavior: z.string(),
 });
 
 type CoachingQualityInput = z.infer<typeof coachingQualityValidationSchema>;
 
-class CoachingQualityMetric extends BaseMetric<typeof coachingQualityValidationSchema> {
+class CoachingQualityMetric extends BaseMetric<
+  typeof coachingQualityValidationSchema
+> {
   public readonly validationSchema = coachingQualityValidationSchema;
 
   constructor(name = "coaching_quality", trackMetric = true) {
@@ -62,7 +74,7 @@ class CoachingQualityMetric extends BaseMetric<typeof coachingQualityValidationS
       const scores = await judgeCoachingQuality(
         testInput as CommitmentCoachInput,
         output as CommitmentCoachOutput,
-        expectedBehavior
+        expectedBehavior,
       );
 
       return [
@@ -72,7 +84,7 @@ class CoachingQualityMetric extends BaseMetric<typeof coachingQualityValidationS
           reason: scores.reasoning,
         },
         {
-          name: "actionability", 
+          name: "actionability",
           value: scores.actionability,
           reason: "Actionability assessment",
         },
@@ -94,7 +106,7 @@ class CoachingQualityMetric extends BaseMetric<typeof coachingQualityValidationS
       ];
     } catch (error) {
       console.error("Error in CoachingQualityMetric:", error);
-      
+
       // Return default scores on error
       return [
         {
@@ -127,7 +139,6 @@ class CoachingQualityMetric extends BaseMetric<typeof coachingQualityValidationS
   }
 }
 
-
 // Define the dataset item type
 type CommitmentCoachDatasetItem = {
   name: string;
@@ -147,9 +158,10 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   const opikClient = new Opik();
 
   // Create or get dataset
-  const dataset = await opikClient.getOrCreateDataset<CommitmentCoachDatasetItem>(
-    "commitment-coach-test-cases"
-  );
+  const dataset =
+    await opikClient.getOrCreateDataset<CommitmentCoachDatasetItem>(
+      "commitment-coach-test-cases",
+    );
 
   // Insert test cases into dataset (Opik automatically deduplicates)
   const datasetItems = commitmentCoachTestCases.map((testCase, index) => ({
@@ -165,11 +177,13 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   await dataset.insert(datasetItems);
 
   // Define the evaluation task
-  const evaluationTask: EvaluationTask<CommitmentCoachDatasetItem> = async (datasetItem) => {
+  const evaluationTask: EvaluationTask<CommitmentCoachDatasetItem> = async (
+    datasetItem,
+  ) => {
     console.log(`\nEvaluating: ${datasetItem.name}`);
-    
+
     const startTime = Date.now();
-    
+
     try {
       // Run your commitment coach flow
       const output = await commitmentCoachFlow(datasetItem.input);
@@ -207,7 +221,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     task: evaluationTask,
     scoringMetrics: [new CoachingQualityMetric()],
     experimentName: experimentName,
-    projectName: "nilla", 
+    projectName: "nilla",
     experimentConfig: {
       timestamp: timestamp,
       agentType: "commitment-coach",
@@ -230,16 +244,25 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
 
   for (const testResult of evaluationResult.testResults) {
     const scoreResults = testResult.scoreResults;
-    const metadata = testResult.testCase.taskOutput?.metadata as { durationMs?: number; testName?: string } | undefined;
-    
+    const metadata = testResult.testCase.taskOutput?.metadata as
+      | { durationMs?: number; testName?: string }
+      | undefined;
+
     // Extract scores from the evaluation results
     const scores = {
-      toneAppropriateness: scoreResults.find(s => s.name === "tone_appropriateness")?.value || 0,
-      actionability: scoreResults.find(s => s.name === "actionability")?.value || 0,
-      riskAccuracy: scoreResults.find(s => s.name === "risk_accuracy")?.value || 0,
-      urgencyCalibration: scoreResults.find(s => s.name === "urgency_calibration")?.value || 0,
-      overallScore: scoreResults.find(s => s.name === "overall_score")?.value || 0,
-      reasoning: scoreResults.find(s => s.name === "tone_appropriateness")?.reason || "",
+      toneAppropriateness:
+        scoreResults.find((s) => s.name === "tone_appropriateness")?.value || 0,
+      actionability:
+        scoreResults.find((s) => s.name === "actionability")?.value || 0,
+      riskAccuracy:
+        scoreResults.find((s) => s.name === "risk_accuracy")?.value || 0,
+      urgencyCalibration:
+        scoreResults.find((s) => s.name === "urgency_calibration")?.value || 0,
+      overallScore:
+        scoreResults.find((s) => s.name === "overall_score")?.value || 0,
+      reasoning:
+        scoreResults.find((s) => s.name === "tone_appropriateness")?.reason ||
+        "",
     };
 
     const durationMs = metadata?.durationMs || 0;
@@ -255,13 +278,15 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
 
   // Calculate averages
   const averageScores = calculateAverageScores(
-    results.map((r) => r.scores as unknown as Record<string, string | number>)
+    results.map((r) => r.scores as unknown as Record<string, string | number>),
   );
 
   console.log("\n" + "-".repeat(40));
   console.log("📊 COMMITMENT COACH SUMMARY");
   console.log(`   Average Overall Score: ${averageScores.overallScore}/5`);
-  console.log(`   Tone Appropriateness: ${averageScores.toneAppropriateness}/5`);
+  console.log(
+    `   Tone Appropriateness: ${averageScores.toneAppropriateness}/5`,
+  );
   console.log(`   Actionability: ${averageScores.actionability}/5`);
   console.log(`   Risk Accuracy: ${averageScores.riskAccuracy}/5`);
   console.log(`   Urgency Calibration: ${averageScores.urgencyCalibration}/5`);
