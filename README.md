@@ -2,6 +2,8 @@
 
 **From wanting to contribute to actually shipping PRs.**
 
+![Dashboard](./app/Dashboard.png)
+
 Nilla is an open-source contributor consistency coach that helps developers build sustainable open-source contribution habits. It addresses the common problem of abandoned PRs and inconsistent contributions by providing a gamified commitment system with AI-powered guidance.
 
 ## Tech Stack
@@ -49,7 +51,7 @@ Nilla is an open-source contributor consistency coach that helps developers buil
 - **Badges** - Unlock 11 achievement badges (First Steps, Streak Master, Polyglot, etc.)
 - **No Leaderboards** - Designed for personal growth, not competition
 
-### AI-Powered Features
+### AI-Powered Features (Agents)
 
 - **Issue Explainer** - AI breaks down complex issues based on your experience level with:
   - Plain-English summaries
@@ -62,6 +64,11 @@ Nilla is an open-source contributor consistency coach that helps developers buil
   - Next action recommendations
   - Deadline risk assessment
   - Encouraging nudges with appropriate tone
+
+- **Issue Recommender** - AI-powered issue suggestions based on:
+  - Your experience level and preferred languages
+  - Issue complexity and beginner-friendliness
+  - Repository activity and maintainer responsiveness
 
 - **RAG Context** - AI uses actual repository documentation for accurate, context-aware explanations
 

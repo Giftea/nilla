@@ -542,7 +542,7 @@ export default function CommitmentsPage() {
                     </div>
 
                     {/* AI Coach */}
-                    <CommitmentCoachCard
+                    {/* <CommitmentCoachCard
                       input={{
                         commitment: {
                           id: commitment.id,
@@ -563,7 +563,7 @@ export default function CommitmentsPage() {
                       }}
                       enabled={!!user}
                       className="mt-2"
-                    />
+                    /> */}
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 pt-2 border-t">
