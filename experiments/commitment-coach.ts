@@ -1,7 +1,7 @@
 import {
   commitmentCoachTestCases,
 } from "../lib/opik/evaluations/datasets";
-import { commitmentCoachFlow } from "../lib/ai/agents/commitment-coach";
+import { commitmentCoachFlow, CommitmentCoachInput, CommitmentCoachOutput } from "../lib/ai/agents/commitment-coach";
 import {
   judgeCoachingQuality,
   calculateAverageScores,
@@ -60,8 +60,8 @@ class CoachingQualityMetric extends BaseMetric<typeof coachingQualityValidationS
     try {
       // Use your existing judgeCoachingQuality function
       const scores = await judgeCoachingQuality(
-        testInput,
-        output,
+        testInput as CommitmentCoachInput,
+        output as CommitmentCoachOutput,
         expectedBehavior
       );
 
@@ -211,7 +211,6 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     experimentConfig: {
       timestamp: timestamp,
       agentType: "commitment-coach",
-      version: "1.0",
       description: "Evaluating commitment coach agent performance",
     },
     scoringKeyMapping: {
@@ -231,7 +230,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
 
   for (const testResult of evaluationResult.testResults) {
     const scoreResults = testResult.scoreResults;
-    const metadata = testResult.testCase.taskOutput?.metadata;
+    const metadata = testResult.testCase.taskOutput?.metadata as { durationMs?: number; testName?: string } | undefined;
     
     // Extract scores from the evaluation results
     const scores = {
