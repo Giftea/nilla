@@ -1,10 +1,11 @@
 "use client";
 
-import { ExternalLink, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, TrendingUp, AlertTriangle, CheckCircle2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AIPanel } from "./ai-panel";
-import { useIssueRecommendation } from "@/lib/hooks/use-ai";
+import { useIssueRecommendation, useAIFeedback, type FeedbackType } from "@/lib/hooks/use-ai";
 import type { RecommendIssueInput, RecommendIssueOutput } from "@/lib/ai";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,29 @@ function RecommendationContent({
   onIssueClick?: (issueId: string) => void;
 }) {
   const RiskIcon = riskIcons[data.riskLevel];
+  const [feedbackGiven, setFeedbackGiven] = useState<FeedbackType | null>(null);
+  const { mutate: submitFeedback, isPending: isSubmittingFeedback } = useAIFeedback();
+
+  const handleFeedback = (type: FeedbackType) => {
+    if (!data.traceId || feedbackGiven) return;
+
+    submitFeedback(
+      {
+        traceId: data.traceId,
+        feedbackType: type,
+        agentType: "issue-recommender",
+        metadata: {
+          recommendedIssueId: data.recommendedIssue.id,
+          recommendedIssueTitle: data.recommendedIssue.title,
+        },
+      },
+      {
+        onSuccess: () => {
+          setFeedbackGiven(type);
+        },
+      }
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -154,6 +178,41 @@ function RecommendationContent({
           Analyzed {data.rankedIssues.length} issues based on your profile
         </span>
       </div>
+
+      {/* Feedback section */}
+      {data.traceId && (
+        <div className="flex items-center justify-between border-t border-border/50 pt-3">
+          <span className="text-xs text-muted-foreground">
+            {feedbackGiven ? "Thanks for your feedback!" : "Was this helpful?"}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-7 w-7 p-0",
+                feedbackGiven === "thumbs_up" && "bg-emerald-500/10 text-emerald-500"
+              )}
+              onClick={() => handleFeedback("thumbs_up")}
+              disabled={isSubmittingFeedback || feedbackGiven !== null}
+            >
+              <ThumbsUp className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-7 w-7 p-0",
+                feedbackGiven === "thumbs_down" && "bg-red-500/10 text-red-500"
+              )}
+              onClick={() => handleFeedback("thumbs_down")}
+              disabled={isSubmittingFeedback || feedbackGiven !== null}
+            >
+              <ThumbsDown className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
