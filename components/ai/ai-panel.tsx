@@ -16,10 +16,6 @@ interface AIPanelProps {
   className?: string;
 }
 
-/**
- * Expandable panel for AI-powered content
- * Gracefully handles loading and error states without blocking primary UI
- */
 export function AIPanel({
   title,
   isLoading = false,

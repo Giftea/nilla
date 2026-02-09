@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { flushTraces, DEFAULT_MODEL, createTrackedAI } from "../openai";
 
-// ============================================
 // INPUT SCHEMAS
-// ============================================
 
 export const ExplainerIssueSchema = z.object({
   title: z.string().describe("Title of the GitHub issue"),
@@ -31,9 +29,8 @@ export const IssueExplainerInputSchema = z.object({
     ),
 });
 
-// ============================================
+
 // OUTPUT SCHEMAS
-// ============================================
 
 export const IssueExplainerOutputSchema = z.object({
   summary: z
@@ -94,18 +91,14 @@ export const IssueExplainerOutputSchema = z.object({
     ),
 });
 
-// ============================================
-// TYPE EXPORTS
-// ============================================
 
 export type ExplainerIssue = z.infer<typeof ExplainerIssueSchema>;
 export type ExplainerUser = z.infer<typeof ExplainerUserSchema>;
 export type IssueExplainerInput = z.infer<typeof IssueExplainerInputSchema>;
 export type IssueExplainerOutput = z.infer<typeof IssueExplainerOutputSchema>;
 
-// ============================================
-// AGENT FUNCTION
-// ============================================
+
+// AGENT
 
 export async function issueExplainerFlow(
   input: IssueExplainerInput
@@ -184,7 +177,7 @@ Explain this issue for a **${user.experienceLevel}** contributor.`;
 
   const trackedAI = createTrackedAI("issue-explainer-completion");
 
-  // Call OpenAI with Opik tracking
+  // llm
   const completion = await trackedAI.chat.completions.create({
     model: DEFAULT_MODEL,
     messages: [
@@ -197,7 +190,7 @@ Explain this issue for a **${user.experienceLevel}** contributor.`;
 
   const text = completion.choices[0]?.message?.content?.trim() ?? "";
 
-  // Parse the LLM response
+  // parse the LLM response
   let result: IssueExplainerOutput;
   try {
     const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
@@ -227,8 +220,6 @@ Explain this issue for a **${user.experienceLevel}** contributor.`;
     };
   }
 
-  // Ensure repoGuidelines is empty when no context was provided,
-  // regardless of what the LLM returned
   if (!repoContext || !repoContext.trim()) {
     result.repoGuidelines = [];
   }

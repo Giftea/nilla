@@ -28,10 +28,6 @@ const riskIcons = {
   high: AlertTriangle,
 };
 
-/**
- * Displays AI-powered issue recommendations
- * Non-blocking - gracefully handles loading/error states
- */
 export function IssueRecommendationCard({
   input,
   enabled = true,

@@ -41,14 +41,13 @@ export default async function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background overflow-hidden">
-      {/* Animated background gradient */}
+
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5" />
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 group">
@@ -70,7 +69,7 @@ export default async function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-20 md:py-32 relative">
-          {/* Floating elements */}
+
           <div className="absolute top-20 left-10 animate-float opacity-20">
             <Sparkles className="h-8 w-8 text-violet-500" />
           </div>
@@ -118,7 +117,6 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Problem Recognition */}
         <section className="relative py-24 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-violet-500/5 via-transparent to-transparent" />
           <div className="container mx-auto px-4 relative">
@@ -162,7 +160,6 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* How It Works */}
         <section className="py-24 relative">
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-5xl">
@@ -178,7 +175,6 @@ export default async function LandingPage() {
                 </p>
               </div>
               <div className="mt-16 relative">
-                {/* Connection line */}
                 <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-violet-500/50 via-indigo-500/50 to-cyan-500/50" />
                 <div className="grid gap-8 md:grid-cols-5">
                   <Step

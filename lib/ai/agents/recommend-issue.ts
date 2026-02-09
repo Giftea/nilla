@@ -7,9 +7,7 @@ import {
   createAgentTrace,
 } from "../openai";
 
-// ============================================
 // TOOL DEFINITIONS
-// ============================================
 
 const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
@@ -59,9 +57,7 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   },
 ];
 
-// ============================================
 // TOOL HANDLERS
-// ============================================
 
 interface RepoStats {
   repoUrl: string;
@@ -85,13 +81,10 @@ interface ComplexityAnalysis {
 }
 
 async function handleFetchRepoStats(repoUrl: string): Promise<RepoStats> {
-  // Extract owner/repo from URL if full URL provided
   const repoPath = repoUrl
     .replace("https://github.com/", "")
     .replace(".git", "");
 
-  // Simulated repo stats - in production, this would call GitHub API
-  // The LLM can use these metrics to make better recommendations
   const mockStats: Record<string, Partial<RepoStats>> = {
     default: {
       stars: Math.floor(Math.random() * 10000),
@@ -146,7 +139,7 @@ async function handleAnalyzeIssueComplexity(
   const labelSet = new Set((labels || []).map((l) => l.toLowerCase()));
 
   const factors: string[] = [];
-  let complexityScore = 3; // Base complexity
+  let complexityScore = 3; // base complexity
 
   // Analyze based on labels
   if (labelSet.has("good first issue") || labelSet.has("good-first-issue")) {
@@ -262,9 +255,7 @@ async function executeTool(
   }
 }
 
-// ============================================
 // INPUT SCHEMAS
-// ============================================
 
 export const UserProfileSchema = z.object({
   id: z.string().describe("User's unique identifier"),
@@ -316,9 +307,7 @@ export const RecommendIssueInputSchema = z.object({
     .describe("List of candidate issues to evaluate (1-20 issues)"),
 });
 
-// ============================================
 // OUTPUT SCHEMAS
-// ============================================
 
 export const IssueAnalysisSchema = z.object({
   issueId: z.string().describe("The issue ID being analyzed"),
@@ -372,9 +361,6 @@ export const RecommendIssueOutputSchema = z.object({
     .describe("Opik trace ID for feedback tracking"),
 });
 
-// ============================================
-// TYPE EXPORTS
-// ============================================
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type Issue = z.infer<typeof IssueSchema>;
@@ -382,9 +368,8 @@ export type RecommendIssueInput = z.infer<typeof RecommendIssueInputSchema>;
 export type RecommendIssueOutput = z.infer<typeof RecommendIssueOutputSchema>;
 export type IssueAnalysis = z.infer<typeof IssueAnalysisSchema>;
 
-// ============================================
+
 // AGENT FUNCTION
-// ============================================
 
 export async function recommendIssueFlow(
   input: RecommendIssueInput,
@@ -507,7 +492,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
   const MAX_ITERATIONS = 10;
   let iterations = 0;
 
-  // Agentic loop - keep calling LLM until it stops making tool calls
+  // Agentic loop - keep call LLM until it stops making tool calls
   while (iterations < MAX_ITERATIONS) {
     iterations++;
 
@@ -515,7 +500,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
       model: DEFAULT_MODEL,
       messages,
       tools,
-      tool_choice: iterations === 1 ? "auto" : "auto", // Let LLM decide
+      tool_choice: iterations === 1 ? "auto" : "auto", 
       temperature: 0.7,
       max_tokens: 2048,
     });
@@ -523,15 +508,15 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
     const choice = completion.choices[0];
     const assistantMessage = choice.message;
 
-    // Add assistant's response to message history
+
     messages.push(assistantMessage);
 
-    // Check if we're done (no more tool calls)
+ 
     if (
       choice.finish_reason !== "tool_calls" &&
       !assistantMessage.tool_calls?.length
     ) {
-      // LLM is done - extract the final response
+
       const text = assistantMessage.content?.trim() ?? "";
 
       let result: RecommendIssueOutput;
@@ -564,7 +549,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
         };
       }
 
-      // End the trace with the result
+      
       agentTrace.update({ output: result }).end();
       await flushTraces();
       return result;
@@ -573,7 +558,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
     // Process tool calls
     if (assistantMessage.tool_calls) {
       for (const toolCall of assistantMessage.tool_calls) {
-        // Type assertion to handle Opik-wrapped types
+
         const tc = toolCall as {
           id: string;
           type: string;
@@ -619,7 +604,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
     }
   }
 
-  // If we hit max iterations, return a fallback
+  // If it hit max iterations, return a fallback
   const fallbackIssue = issues[0];
   const fallbackResult: RecommendIssueOutput = {
     recommendedIssue: {
@@ -642,7 +627,6 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
     traceId,
   };
 
-  // End the trace with the fallback result
   agentTrace.update({ output: fallbackResult }).end();
   await flushTraces();
 

@@ -37,7 +37,7 @@ export interface AgentEvaluationSummary {
 
 import { z } from "zod";
 
-// Define the validation schema for the metric inputs
+// define the validation schema for the metric inputs
 const coachingQualityValidationSchema = z.object({
   input: z.object({
     commitment: z.any(),
@@ -70,7 +70,6 @@ class CoachingQualityMetric extends BaseMetric<
     const { input: testInput, output, expectedBehavior } = input;
 
     try {
-      // Use your existing judgeCoachingQuality function
       const scores = await judgeCoachingQuality(
         testInput as CommitmentCoachInput,
         output as CommitmentCoachOutput,
@@ -107,7 +106,7 @@ class CoachingQualityMetric extends BaseMetric<
     } catch (error) {
       console.error("Error in CoachingQualityMetric:", error);
 
-      // Return default scores on error
+    
       return [
         {
           name: "tone_appropriateness",
@@ -139,7 +138,7 @@ class CoachingQualityMetric extends BaseMetric<
   }
 }
 
-// Define the dataset item type
+
 type CommitmentCoachDatasetItem = {
   name: string;
   input: {
@@ -157,13 +156,13 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   const experimentName = `${EXPERIMENT_PREFIX}-commitment-coach-${timestamp}`;
   const opikClient = new Opik();
 
-  // Create or get dataset
+  // create or get dataset
   const dataset =
     await opikClient.getOrCreateDataset<CommitmentCoachDatasetItem>(
       "commitment-coach-test-cases",
     );
 
-  // Insert test cases into dataset (Opik automatically deduplicates)
+  // insert test cases into dataset
   const datasetItems = commitmentCoachTestCases.map((testCase, index) => ({
     name: testCase.name,
     input: testCase.input,
@@ -176,7 +175,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
 
   await dataset.insert(datasetItems);
 
-  // Define the evaluation task
+
   const evaluationTask: EvaluationTask<CommitmentCoachDatasetItem> = async (
     datasetItem,
   ) => {
@@ -185,7 +184,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     const startTime = Date.now();
 
     try {
-      // Run your commitment coach flow
+ 
       const output = await commitmentCoachFlow(datasetItem.input);
       const durationMs = Date.now() - startTime;
 
@@ -215,7 +214,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     }
   };
 
-  // Run the evaluation using Opik's evaluate function
+
   const evaluationResult = await evaluate({
     dataset: dataset,
     task: evaluationTask,
@@ -228,7 +227,6 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
       description: "Evaluating commitment coach agent performance",
     },
     scoringKeyMapping: {
-      // Map dataset fields to metric parameters
       expectedBehavior: "expectedBehavior",
       input: "input",
     },
@@ -238,7 +236,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   console.log(`📊 Experiment ID: ${evaluationResult.experimentId}`);
   console.log(`🔗 View results: ${evaluationResult.resultUrl}`);
 
-  // Process results for your existing summary format
+
   const results: EvaluationResult<CommitmentCoachJudgeResult>[] = [];
   let totalDurationMs = 0;
 
@@ -248,7 +246,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
       | { durationMs?: number; testName?: string }
       | undefined;
 
-    // Extract scores from the evaluation results
+
     const scores = {
       toneAppropriateness:
         scoreResults.find((s) => s.name === "tone_appropriateness")?.value || 0,
@@ -276,7 +274,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     });
   }
 
-  // Calculate averages
+
   const averageScores = calculateAverageScores(
     results.map((r) => r.scores as unknown as Record<string, string | number>),
   );
@@ -301,7 +299,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   };
 }
 
-// Run the evaluation
+
 evaluateCommitmentCoach().catch((error) => {
   console.error("Error during commitment coach evaluation:", error);
   process.exit(1);

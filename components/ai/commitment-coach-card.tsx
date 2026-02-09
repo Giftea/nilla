@@ -52,10 +52,6 @@ const nudgeToneStyles = {
   supportive: "border-l-violet-500",
 };
 
-/**
- * Displays AI coaching for a commitment
- * Non-blocking - gracefully handles loading/error states
- */
 export function CommitmentCoachCard({
   input,
   enabled = true,

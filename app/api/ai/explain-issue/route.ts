@@ -3,7 +3,6 @@ import { z } from "zod";
 import { issueExplainerFlow } from "@/lib/ai/agents/issue-explainer";
 import { retrieveRepoContext } from "@/lib/rag/retrieve";
 
-// Request schema: issue details + user level + optional repo ID for RAG
 const ExplainIssueRequestSchema = z.object({
   issue: z.object({
     title: z.string().min(1),
@@ -15,7 +14,6 @@ const ExplainIssueRequestSchema = z.object({
   user: z.object({
     experienceLevel: z.enum(["beginner", "intermediate", "advanced"]),
   }),
-  // Optional: pass the tracked repo UUID to enable RAG context retrieval
   repoId: z.string().uuid().optional(),
 });
 
@@ -36,7 +34,6 @@ export async function POST(request: NextRequest) {
 
     const { issue, user, repoId } = parseResult.data;
 
-    // If a repo ID is provided, retrieve relevant documentation context
     let repoContext: string | undefined;
     if (repoId) {
       console.log(`[Explain] Retrieving RAG context for repo ${repoId}`);

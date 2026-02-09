@@ -11,28 +11,17 @@
 ![Dashboard](./docs/opik-screenshots/Dashboard.png)
 
 Nilla is an **AI-powered commitment coach** that helps developers build sustainable open source contribution habits through:
-- 🤖 **Autonomous AI agents** with tool calling and multi-step reasoning
-- 📊 **Rigorous evaluation** using LLM-as-judge and Opik observability
-- 🎮 **Gamified 7-day commitments** that drive consistent progress
-- 🔬 **Full transparency** with every AI decision traced and measured
+- **Autonomous AI agents** with tool calling and multi-step reasoning
+- **Custom evaluation** using LLM-as-judge and Opik observability
+- **Gamified 7-day commitments** that drive consistent progress
+- **Full transparency** with every AI decision traced and measured
 
 ## 🎬 Quick Demo Links for Judges
 
 - **Live Demo**: [Click HERE](https://nilla-ai.vercel.app)
 - **Video Demo**: [Click HERE](https://www.veed.io/view/e361732b-4c62-4a7b-8cf5-871eb3505d26?source=Homepage&panel=share)
-- **Pitch Deck**: [Click HERE](https://www.canva.com/design/DAHAuRj4w54/EKkSpvkK4jLmD6QaoUlfxQ/edit)
-
+- **Pitch Dec Presentation**: [Click HERE](https://www.canva.com/design/DAHAuRj4w54/EKkSpvkK4jLmD6QaoUlfxQ/edit)
 - **SETUP THE APP LOCALLY**: [JUMP TO SETUP](#running-locally)
-
-Want to see Nilla in action? Jump to:
-- 🤖 [Agentic System](#issue-recommender-agent-agentic-system) - See autonomous tool calling
-- 📊 [Evaluation Results](#-ai-evaluation--observability) - LLM-as-judge scores and Opik integration
-
-**Key Highlights:**
-- ✅ True agentic behavior (multi-step reasoning with tools)
-- ✅ 36 test cases across 3 agents (4.0/5 average quality)
-- ✅ Custom Opik metrics with hierarchical tracing
-- ✅ Data-driven improvement through systematic evaluation
 
 ---
 
@@ -83,17 +72,6 @@ Want to see Nilla in action? Jump to:
 - **Badges** - Unlock 11 achievement badges (First Steps, Streak Master, Polyglot, etc.)
 - **No Leaderboards** - Designed for personal growth, not competition
 
-### AI-Powered Features (Agents)
-
-- **Issue Explainer** - AI breaks down complex issues based on your experience level with:
-  - Plain-English summaries
-  - Expected outcomes
-  - Repository-specific contribution guidelines
-  - Common pitfalls and suggested approaches
-  - Key terms with definitions
-
----
-
 ### AI-Powered Agents
 
 Nilla uses **three specialized AI agents** working together to guide your open source journey:
@@ -129,76 +107,6 @@ All agents are:
 - ✅ Evaluated with LLM-as-judge on curated test datasets
 - ✅ Fully traced in Opik for transparency
 - ✅ Continuously improved through data-driven iteration
-
----
-
-## Issue Recommender Agent (Agentic System)
-
-Our Issue Recommender uses autonomous tool calling to make data-driven recommendations:
-
-**Tools Available**:
-- `fetch_repo_stats`: Analyzes repository health (stars, activity, maintainer responsiveness)
-- `analyze_issue_complexity`: Evaluates issue difficulty based on labels, description, and context
-
-**Agentic Workflow**:
-1. Agent analyzes user profile (skill level, languages, interests)
-2. **Autonomously decides** which repositories to investigate
-3. Calls `fetch_repo_stats` for promising repos
-4. Calls `analyze_issue_complexity` for suitable issues
-5. Synthesizes gathered data across multiple reasoning steps
-6. Provides final recommendation with detailed justification
-
-**Observable in Opik**: Complete agent trajectory including tool selection, data gathering, and multi-step reasoning.
-
-![Agent Trace Example](./docs/opik-screenshots/agent-trace-example.png)
-
----
-
-## 🔬 AI Evaluation & Observability
-
-Nilla uses **[Opik](https://www.comet.com/site/products/opik/)** to systematically measure and improve AI agent quality.
-
-### Evaluation Approach
-
-- **LLM-as-Judge**: GPT-4o independently evaluates all agent outputs
-- **Multi-Metric Scoring**: 4-5 dimensions per agent (clarity, accuracy, tone, etc.)
-- **Comprehensive Test Suites**: 12 curated test cases per agent (36 total)
-- **Experiment Tracking**: All evaluations versioned and comparable in Opik
-
-### Agent Performance
-
-| Agent | Overall Score | Key Strengths |
-|-------|--------------|---------------|
-| **Issue Recommender** | 4.0/5 | Tool-based analysis, difficulty calibration |
-| **Commitment Coach** | 4.0/5 | Urgency calibration, actionable advice |
-| **Issue Explainer** | 4.0/5 | Level-appropriate explanations, clarity |
-
-### Agentic System Observability
-
-Our Issue Recommender demonstrates **true agentic behavior**:
-- Autonomous tool calling (`fetch_repo_stats`, `analyze_issue_complexity`)
-- Multi-step reasoning chains (avg 3.2 tool calls per recommendation)
-- Complete trajectory visibility in Opik traces
-
-**Example Agent Trace**:
-```
-issue-recommender-agent 
-├── llm-call: Analyze user profile 
-├── tool:fetch_repo_stats (repo A) → health: 85/100 
-├── tool:analyze_issue_complexity (issue #1) → difficulty: 3/10 
-├── llm-call: Synthesize data 
-└── output: Recommend issue #1 (low risk, good fit)
-```
-
-
-### Continuous Improvement
-
-We use Opik evaluations to iterate on agent quality:
-1. Run test suite → Identify weak areas
-2. Adjust prompts → Re-evaluate
-3. Deploy improvements → Track production metrics
-
-This data-driven approach ensures our AI agents get better over time.
 
 ---
 
@@ -373,14 +281,6 @@ Built for **[Commit To Change: An AI Agents Hackathon]** - Personal Learning & G
 - Average agent quality: 4.0/5 across all metrics
 
 **Questions or feedback?** Open an issue or reach out to [@giftea](https://github.com/giftea)
-
-## Contributing
-
-We welcome contributions! To maintain quality:
-1. All agent changes must pass evaluations (run evaluation commands above)
-2. New features should include test cases
-3. Check Opik traces before submitting PRs
-
 
 ## License
 

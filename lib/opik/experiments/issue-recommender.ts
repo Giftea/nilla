@@ -178,7 +178,6 @@ class RecommendationQualityMetric extends BaseMetric<
   }
 }
 
-// Define the dataset item type
 type IssueRecommenderDatasetItem = {
   name: string;
   input: {
@@ -269,7 +268,6 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
       description: "Evaluating issue recommender agent performance",
     },
     scoringKeyMapping: {
-      // Map dataset fields to metric parameters
       expectedBehavior: "expectedBehavior",
       input: "input",
     },
@@ -279,7 +277,6 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
   console.log(`📊 Experiment ID: ${evaluationResult.experimentId}`);
   console.log(`🔗 View results: ${evaluationResult.resultUrl}`);
 
-  // Process results for your existing summary format
   const results: EvaluationResult<IssueRecommenderJudgeResult>[] = [];
   let totalDurationMs = 0;
 
@@ -289,7 +286,6 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
       | { durationMs?: number; testName?: string }
       | undefined;
 
-    // Extract scores from the evaluation results
     const scores = {
       matchQuality:
         scoreResults.find((s) => s.name === "match_quality")?.value || 0,
@@ -317,7 +313,7 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
     });
   }
 
-  // Calculate averages
+
   const averageScores = calculateAverageScores(
     results.map((r) => r.scores as unknown as Record<string, string | number>),
   );
@@ -342,7 +338,6 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
   };
 }
 
-// Run the evaluation
 evaluateIssueRecommender().catch((error) => {
   console.error("Error during issue recommender evaluation:", error);
   process.exit(1);
