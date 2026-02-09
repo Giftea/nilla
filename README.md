@@ -21,7 +21,6 @@ Nilla is an **AI-powered commitment coach** that helps developers build sustaina
 Want to see Nilla in action? Jump to:
 - 🤖 [Agentic System](#issue-recommender-agent-agentic-system) - See autonomous tool calling
 - 📊 [Evaluation Results](#-ai-evaluation--observability) - LLM-as-judge scores and Opik integration
-- 📄 [Detailed Report](./EVALUATION_REPORT.md) - Full evaluation methodology
 
 **Key Highlights:**
 - ✅ True agentic behavior (multi-step reasoning with tools)
@@ -185,9 +184,6 @@ issue-recommender-agent
 └── output: Recommend issue #1 (low risk, good fit)
 ```
 
-📄 **Detailed Evaluation Report**: [EVALUATION_REPORT.md](./EVALUATION_REPORT.md) - Full methodology, test results, and insights
-
-*(Run evaluation commands below to generate fresh data)*
 
 ### Continuous Improvement
 
@@ -379,7 +375,6 @@ We welcome contributions! To maintain quality:
 2. New features should include test cases
 3. Check Opik traces before submitting PRs
 
-See [EVALUATION_REPORT.md](./EVALUATION_REPORT.md) for our quality standards.
 
 ## License
 
