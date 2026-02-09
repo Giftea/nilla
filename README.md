@@ -16,7 +16,13 @@ Nilla is an **AI-powered commitment coach** that helps developers build sustaina
 - 🎮 **Gamified 7-day commitments** that drive consistent progress
 - 🔬 **Full transparency** with every AI decision traced and measured
 
-## 🎬 Quick Demo for Judges
+## 🎬 Quick Demo Links for Judges
+
+- **Live Demo**: [Click HERE](https://nilla-ai.vercel.app)
+- **Video Demo**: [Click HERE](https://www.veed.io/view/e361732b-4c62-4a7b-8cf5-871eb3505d26?source=Homepage&panel=share)
+- **Pitch Deck**: [Click HERE](https://www.canva.com/design/DAHAuRj4w54/EKkSpvkK4jLmD6QaoUlfxQ/edit)
+
+- **SETUP THE APP LOCALLY**: [JUMP TO SETUP](#running-locally)
 
 Want to see Nilla in action? Jump to:
 - 🤖 [Agentic System](#issue-recommender-agent-agentic-system) - See autonomous tool calling
