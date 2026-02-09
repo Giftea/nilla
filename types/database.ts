@@ -414,6 +414,41 @@ export type Database = {
           created_at?: string;
         };
       };
+      repo_document_chunks: {
+        Row: {
+          id: string;
+          repo_id: string;
+          github_repo_full_name: string;
+          file_path: string;
+          content: string;
+          chunk_index: number;
+          embedding: string;
+          token_count: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          repo_id: string;
+          github_repo_full_name: string;
+          file_path: string;
+          content: string;
+          chunk_index: number;
+          embedding: string;
+          token_count?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          repo_id?: string;
+          github_repo_full_name?: string;
+          file_path?: string;
+          content?: string;
+          chunk_index?: number;
+          embedding?: string;
+          token_count?: number | null;
+          created_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -436,6 +471,21 @@ export type Database = {
           p_commitment_id?: string;
         };
         Returns: boolean;
+      };
+      match_repo_documents: {
+        Args: {
+          query_embedding: string;
+          match_repo_id: string;
+          match_count?: number;
+          match_threshold?: number;
+        };
+        Returns: {
+          id: string;
+          file_path: string;
+          content: string;
+          chunk_index: number;
+          similarity: number;
+        }[];
       };
     };
     Enums: {

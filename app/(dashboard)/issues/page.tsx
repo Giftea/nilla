@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -29,11 +29,14 @@ import {
   Target,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import type { GitHubIssue } from "@/lib/github/api";
 import { CommitDialog } from "@/components/issues/commit-dialog";
+import { IssueRecommendationCard, IssueExplainerDialog } from "@/components/ai";
+import type { Issue as AIIssue, UserProfile } from "@/lib/ai";
 
 export default function IssuesPage() {
   const [selectedRepo, setSelectedRepo] = useState<string>("all");
@@ -45,8 +48,42 @@ export default function IssuesPage() {
     issue: GitHubIssue;
     repoFullName: string;
   } | null>(null);
+  const [explainerDialogOpen, setExplainerDialogOpen] = useState(false);
+  const [explainerIssue, setExplainerIssue] = useState<{
+    title: string;
+    body?: string;
+    labels: string[];
+    repository: string;
+    url: string;
+    repoId?: string;
+  } | null>(null);
 
   const ITEMS_PER_PAGE = 10;
+
+  // Fetch current user
+  const { data: user } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      return user;
+    },
+  });
+
+  // Fetch user stats for AI context
+  const { data: userStats } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("user_stats")
+        .select("*")
+        .single();
+      if (error && error.code !== "PGRST116") throw error;
+      return data;
+    },
+  });
 
   // Fetch tracked repos
   const { data: trackedRepos } = useQuery({
@@ -124,6 +161,33 @@ export default function IssuesPage() {
       return issue.score.difficulty === difficultyFilter;
     })
     .sort((a, b) => b.score.activityScore - a.score.activityScore);
+
+  // Prepare AI recommendation input
+  const aiRecommendationInput = useMemo(() => {
+    if (!user || !filteredIssues || filteredIssues.length === 0) return null;
+
+    const userProfile: UserProfile = {
+      id: user.id,
+      username: user.user_metadata?.user_name || "contributor",
+      skillLevel: user.user_metadata?.skill_level || "beginner",
+      preferredLanguages: user.user_metadata?.languages || ["javascript", "typescript"],
+      interests: user.user_metadata?.interests,
+      pastContributions: userStats?.completed_commitments || 0,
+    };
+
+    const aiIssues: AIIssue[] = filteredIssues.slice(0, 10).map((issue) => ({
+      id: String(issue.id),
+      title: issue.title,
+      body: issue.body || undefined,
+      labels: issue.labels?.map((l: { name: string }) => l.name) || [],
+      repository: issue.repoFullName,
+      language: undefined,
+      commentCount: issue.comments,
+      url: issue.html_url,
+    }));
+
+    return { user: userProfile, issues: aiIssues };
+  }, [user, filteredIssues, userStats]);
 
   // Pagination
   const totalIssues = filteredIssues?.length || 0;
@@ -227,6 +291,21 @@ export default function IssuesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Recommendation */}
+      {filteredIssues && filteredIssues.length > 0 && (
+        <IssueRecommendationCard
+          input={aiRecommendationInput}
+          enabled={!isLoading && !!aiRecommendationInput}
+          onIssueClick={(issueId) => {
+            const issue = filteredIssues?.find((i) => String(i.id) === issueId);
+            if (issue) {
+              setSelectedIssue({ issue, repoFullName: issue.repoFullName });
+              setCommitDialogOpen(true);
+            }
+          }}
+        />
+      )}
 
       {/* Issues List */}
       {!trackedRepos || trackedRepos.length === 0 ? (
@@ -336,6 +415,25 @@ export default function IssuesPage() {
                         View
                       </Button>
                     </a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs sm:text-sm border-violet-500/30 text-violet-600 hover:bg-violet-500/10"
+                      onClick={() => {
+                        setExplainerIssue({
+                          title: issue.title,
+                          body: issue.body || undefined,
+                          labels: issue.labels.map((l: { name: string }) => l.name),
+                          repository: issue.repoFullName,
+                          url: issue.html_url,
+                          repoId: issue.repoId,
+                        });
+                        setExplainerDialogOpen(true);
+                      }}
+                    >
+                      <Sparkles className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
+                      Explain
+                    </Button>
                     <Button
                       size="sm"
                       className={`h-8 text-xs sm:text-sm ${
@@ -447,6 +545,17 @@ export default function IssuesPage() {
           repoFullName={selectedIssue.repoFullName}
         />
       )}
+
+      {/* Issue Explainer Dialog */}
+      <IssueExplainerDialog
+        open={explainerDialogOpen}
+        onOpenChange={setExplainerDialogOpen}
+        issue={explainerIssue}
+        repoId={explainerIssue?.repoId}
+        userExperienceLevel={
+          (user?.user_metadata?.skill_level as "beginner" | "intermediate" | "advanced") || "beginner"
+        }
+      />
     </div>
   );
 }
