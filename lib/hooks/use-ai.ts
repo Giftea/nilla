@@ -206,3 +206,65 @@ export function useIssueExplainerMutation() {
     retry: 1,
   });
 }
+
+// ============================================
+// AI FEEDBACK
+// ============================================
+
+export type FeedbackType = "thumbs_up" | "thumbs_down";
+export type AgentType = "issue-recommender" | "commitment-coach" | "issue-explainer";
+
+export interface FeedbackInput {
+  traceId: string;
+  feedbackType: FeedbackType;
+  agentType: AgentType;
+  metadata?: {
+    userId?: string;
+    recommendedIssueId?: string;
+    recommendedIssueTitle?: string;
+  };
+}
+
+interface FeedbackResponse {
+  success: boolean;
+  message: string;
+  data: {
+    traceId: string;
+    feedbackType: FeedbackType;
+    score: number;
+  };
+}
+
+async function submitFeedback(input: FeedbackInput): Promise<FeedbackResponse> {
+  const response = await fetch("/api/ai/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || "Failed to submit feedback");
+  }
+
+  return response.json();
+}
+
+/**
+ * Mutation hook for submitting user feedback on AI recommendations
+ *
+ * @example
+ * const { mutate, isPending } = useAIFeedback();
+ * mutate({
+ *   traceId: "abc123",
+ *   feedbackType: "thumbs_up",
+ *   agentType: "issue-recommender",
+ *   metadata: { recommendedIssueId: "123" }
+ * });
+ */
+export function useAIFeedback() {
+  return useMutation({
+    mutationFn: submitFeedback,
+    retry: 1,
+  });
+}

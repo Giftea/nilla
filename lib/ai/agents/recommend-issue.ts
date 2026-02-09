@@ -366,6 +366,10 @@ export const RecommendIssueOutputSchema = z.object({
   rankedIssues: z
     .array(IssueAnalysisSchema)
     .describe("All issues ranked from best to worst fit"),
+  traceId: z
+    .string()
+    .optional()
+    .describe("Opik trace ID for feedback tracking"),
 });
 
 // ============================================
@@ -488,6 +492,9 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
     issueCount: issues.length,
   });
 
+  // Get the trace ID for feedback tracking
+  const traceId = agentTrace.data.id;
+
   // Create tracked AI client nested under the parent trace
   const trackedAI = createTrackedAI("llm-call", agentTrace);
 
@@ -531,7 +538,8 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
       try {
         const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
         const jsonStr = jsonMatch ? jsonMatch[1] : text;
-        result = JSON.parse(jsonStr);
+        const parsed = JSON.parse(jsonStr);
+        result = { ...parsed, traceId };
       } catch {
         const fallbackIssue = issues[0];
         result = {
@@ -552,6 +560,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
             fitScore: 5,
             reasoning: "Unable to analyze - manual review recommended",
           })),
+          traceId,
         };
       }
 
@@ -630,6 +639,7 @@ When you're ready to give your final answer, respond with ONLY a valid JSON obje
       fitScore: 5,
       reasoning: "Unable to complete analysis",
     })),
+    traceId,
   };
 
   // End the trace with the fallback result
