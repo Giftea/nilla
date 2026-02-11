@@ -7,9 +7,7 @@ import type {
   IssueExplainerOutput,
 } from "@/lib/ai";
 
-// ============================================
 // API FUNCTIONS
-// ============================================
 
 async function fetchIssueRecommendation(
   input: RecommendIssueInput
@@ -45,19 +43,6 @@ async function fetchCommitmentCoaching(
   return response.json();
 }
 
-// ============================================
-// HOOKS
-// ============================================
-
-/**
- * Hook to get AI-powered issue recommendations
- *
- * @example
- * const { data, isLoading, error, refetch } = useIssueRecommendation({
- *   user: { id: "123", username: "john", skillLevel: "beginner", preferredLanguages: ["typescript"] },
- *   issues: filteredIssues
- * }, { enabled: issues.length > 0 });
- */
 export function useIssueRecommendation(
   input: RecommendIssueInput | null,
   options?: {
@@ -80,19 +65,6 @@ export function useIssueRecommendation(
   });
 }
 
-/**
- * Hook to get AI coaching for a commitment
- *
- * The query key includes the commitment's current milestone, so coaching
- * is only refetched when the user's progress actually changes - not on
- * every page visit.
- *
- * @example
- * const { data, isLoading, error, refetch } = useCommitmentCoach({
- *   commitment: activeCommitment,
- *   user: { username: "john" }
- * });
- */
 export function useCommitmentCoach(
   input: CommitmentCoachInput | null,
   options?: {
@@ -122,23 +94,13 @@ export function useCommitmentCoach(
     enabled: options?.enabled ?? input !== null,
     // Cache for 30 minutes - coaching only needs refresh when milestone changes
     staleTime: options?.staleTime ?? 30 * 60 * 1000,
-    // Never refetch on window focus - only when milestone changes
     refetchOnWindowFocus: false,
-    // Don't refetch on mount if we have cached data
     refetchOnMount: false,
     retry: 1,
     retryDelay: 1000,
   });
 }
 
-/**
- * Mutation hook for on-demand issue recommendations
- * Use this when you want to trigger recommendations manually (e.g., button click)
- *
- * @example
- * const { mutate, isPending, data, error } = useIssueRecommendationMutation();
- * mutate({ user, issues });
- */
 export function useIssueRecommendationMutation() {
   return useMutation({
     mutationFn: fetchIssueRecommendation,
@@ -146,10 +108,6 @@ export function useIssueRecommendationMutation() {
   });
 }
 
-/**
- * Mutation hook for on-demand coaching
- * Use this when you want to trigger coaching manually
- */
 export function useCommitmentCoachMutation() {
   return useMutation({
     mutationFn: fetchCommitmentCoaching,
@@ -157,9 +115,8 @@ export function useCommitmentCoachMutation() {
   });
 }
 
-// ============================================
+
 // ISSUE EXPLAINER
-// ============================================
 
 export interface IssueExplainerInput {
   issue: {
@@ -192,14 +149,6 @@ async function fetchIssueExplanation(
   return response.json();
 }
 
-/**
- * Mutation hook for on-demand issue explanations.
- * Triggered per-issue when the user clicks "Explain", not auto-fetched.
- *
- * @example
- * const { mutate, isPending, data, error } = useIssueExplainerMutation();
- * mutate({ issue, user: { experienceLevel: "beginner" }, repoId });
- */
 export function useIssueExplainerMutation() {
   return useMutation({
     mutationFn: fetchIssueExplanation,
@@ -207,9 +156,7 @@ export function useIssueExplainerMutation() {
   });
 }
 
-// ============================================
 // AI FEEDBACK
-// ============================================
 
 export type FeedbackType = "thumbs_up" | "thumbs_down";
 export type AgentType = "issue-recommender" | "commitment-coach" | "issue-explainer";
@@ -250,18 +197,6 @@ async function submitFeedback(input: FeedbackInput): Promise<FeedbackResponse> {
   return response.json();
 }
 
-/**
- * Mutation hook for submitting user feedback on AI recommendations
- *
- * @example
- * const { mutate, isPending } = useAIFeedback();
- * mutate({
- *   traceId: "abc123",
- *   feedbackType: "thumbs_up",
- *   agentType: "issue-recommender",
- *   metadata: { recommendedIssueId: "123" }
- * });
- */
 export function useAIFeedback() {
   return useMutation({
     mutationFn: submitFeedback,

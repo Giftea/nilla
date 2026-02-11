@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { flushTraces, DEFAULT_MODEL, createTrackedAI } from "../openai";
 
-// ============================================
 // MILESTONE DEFINITIONS
-// ============================================
 
 export const MilestoneEnum = z.enum([
   "not_started",
@@ -25,9 +23,7 @@ export const MILESTONE_ORDER: Milestone[] = [
   "completed",
 ];
 
-// ============================================
 // INPUT SCHEMAS
-// ============================================
 
 export const CommitmentSchema = z.object({
   id: z.string().describe("Unique commitment ID"),
@@ -68,9 +64,7 @@ export const CommitmentCoachInputSchema = z.object({
     .describe("Current ISO timestamp (defaults to now if not provided)"),
 });
 
-// ============================================
 // OUTPUT SCHEMAS
-// ============================================
 
 export const RiskLevelEnum = z.enum(["on_track", "needs_attention", "at_risk", "critical"]);
 
@@ -94,7 +88,6 @@ export const CommitmentCoachOutputSchema = z.object({
       .describe("The emotional tone of the nudge"),
   }),
 
-  // Risk assessment
   riskAssessment: z.object({
     level: RiskLevelEnum.describe("Current risk level for missing the deadline"),
     reason: z.string().describe("Why this risk level was assigned"),
@@ -102,7 +95,6 @@ export const CommitmentCoachOutputSchema = z.object({
     hoursRemaining: z.number().describe("Hours remaining until deadline"),
   }),
 
-  // Warning (only if at risk)
   warning: z
     .object({
       message: z.string().describe("A clear warning about the deadline risk"),
@@ -111,23 +103,18 @@ export const CommitmentCoachOutputSchema = z.object({
     .optional()
     .describe("Present only if user is at risk of missing deadline"),
 
-  // Progress context
   progress: z.object({
     currentMilestone: MilestoneEnum,
     milestonesRemaining: z.number().describe("Number of milestones left to complete"),
     percentComplete: z.number().describe("Percentage of journey completed (0-100)"),
   }),
 
-  // UI-ready metadata
   meta: z.object({
     generatedAt: z.string().describe("ISO timestamp of when this coaching was generated"),
     commitmentId: z.string().describe("ID of the commitment this coaching is for"),
   }),
 });
 
-// ============================================
-// TYPE EXPORTS
-// ============================================
 
 export type Commitment = z.infer<typeof CommitmentSchema>;
 export type UserContext = z.infer<typeof UserContextSchema>;
@@ -135,9 +122,6 @@ export type CommitmentCoachInput = z.infer<typeof CommitmentCoachInputSchema>;
 export type CommitmentCoachOutput = z.infer<typeof CommitmentCoachOutputSchema>;
 export type RiskLevel = z.infer<typeof RiskLevelEnum>;
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
 
 function calculateTimeRemaining(deadlineAt: string, currentTime: string) {
   const deadline = new Date(deadlineAt).getTime();
@@ -170,16 +154,16 @@ function determineRiskLevel(
 
   const milestoneIndex = MILESTONE_ORDER.indexOf(currentMilestone);
 
-  // Critical: Less than 24 hours and not even working on solution
+  // critical: Less than 24 hours and not even working on solution
   if (hoursRemaining < 24 && milestoneIndex < 3) return "critical";
 
-  // At risk: Less than 2 days and haven't started working
+  // at risk: Less than 2 days and haven't started working
   if (daysRemaining < 2 && milestoneIndex < 3) return "at_risk";
 
-  // Needs attention: Less than 4 days and still in early stages
+  // needs attention: Less than 4 days and still in early stages
   if (daysRemaining < 4 && milestoneIndex < 2) return "needs_attention";
 
-  // At risk: More than half time gone but less than half progress
+  // at risk: More than half time gone but less than half progress
   if (daysRemaining < 3.5 && milestoneIndex < 2) return "needs_attention";
 
   return "on_track";
@@ -209,9 +193,6 @@ function validateTone(
     : "encouraging";
 }
 
-// ============================================
-// AGENT FUNCTION
-// ============================================
 
 export async function commitmentCoachFlow(
   input: CommitmentCoachInput
@@ -316,8 +297,6 @@ Choose the nudge tone based on the situation:
 
   const trackedAI = createTrackedAI("commitment-coach-completion");
 
-
-  // Call OpenAI with Opik tracking
   const completion = await trackedAI.chat.completions.create({
     model: DEFAULT_MODEL,
     messages: [
@@ -330,7 +309,6 @@ Choose the nudge tone based on the situation:
 
   const text = completion.choices[0]?.message?.content?.trim() ?? "";
 
-  // Parse LLM response
   let llmOutput: {
     nextAction: { action: string; why: string; estimatedMinutes?: number };
     nudge: { message: string; tone: string };
@@ -343,7 +321,6 @@ Choose the nudge tone based on the situation:
     const jsonStr = jsonMatch ? jsonMatch[1] : text;
     llmOutput = JSON.parse(jsonStr);
   } catch {
-    // Fallback response
     llmOutput = {
       nextAction: {
         action: getDefaultAction(commitment.currentMilestone),
@@ -386,7 +363,6 @@ Choose the nudge tone based on the situation:
     },
   };
 
-  // Only add warning if risk is elevated
   if ((riskLevel === "at_risk" || riskLevel === "critical") && llmOutput.warning) {
     result.warning = {
       message: llmOutput.warning.message,
@@ -394,7 +370,6 @@ Choose the nudge tone based on the situation:
     };
   }
 
-  // Flush traces to ensure they're sent
   await flushTraces();
 
   return result;

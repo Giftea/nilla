@@ -127,8 +127,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Fire-and-forget: fetch repo docs and ingest embeddings for RAG.
-    // This runs in the background — we don't await it so the user
-    // gets an immediate response. Errors are logged inside the function.
     fetchAndIngestRepoDocs(
       trackedRepo.id,
       parsed.owner,

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { ingestRepoDocuments, clearRepoChunks } from "@/lib/rag/ingest";
 
-// Validate the request body: repo info + array of documents
 const IngestRequestSchema = z.object({
   repoId: z.string().uuid(),
   repoFullName: z.string().min(1),
@@ -20,8 +19,6 @@ const IngestRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify this is called with a service-level secret to prevent abuse.
-    // In production, replace with proper auth (e.g. check session or API key).
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -42,7 +39,6 @@ export async function POST(request: NextRequest) {
 
     const { repoId, repoFullName, documents, clean } = parseResult.data;
 
-    // Optionally clear existing chunks for a fresh re-ingest
     if (clean) {
       await clearRepoChunks(repoId);
     }

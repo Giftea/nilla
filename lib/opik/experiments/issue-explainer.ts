@@ -33,7 +33,7 @@ export interface AgentEvaluationSummary {
 
 import { z } from "zod";
 
-// Define the validation schema for the metric inputs
+// define the validation schema for the metric inputs
 const explanationQualityValidationSchema = z.object({
   input: z.object({
     issue: z.object({
@@ -95,7 +95,6 @@ class ExplanationQualityMetric extends BaseMetric<
     }
 
     try {
-      // Use the judgeExplanationQuality function
       const scores = await judgeExplanationQuality(
         testInput,
         output as any,
@@ -132,7 +131,7 @@ class ExplanationQualityMetric extends BaseMetric<
     } catch (error) {
       console.error("Error in ExplanationQualityMetric:", error);
 
-      // Return default scores on error
+
       return [
         {
           name: "clarity",
@@ -164,7 +163,7 @@ class ExplanationQualityMetric extends BaseMetric<
   }
 }
 
-// Define the dataset item type
+
 type IssueExplainerDatasetItem = {
   name: string;
   input: {
@@ -183,13 +182,12 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   const experimentName = `${EXPERIMENT_PREFIX}-issue-explainer-${timestamp}`;
   const opikClient = new Opik();
 
-  // Create or get dataset
+  // create or get dataset
   const dataset =
     await opikClient.getOrCreateDataset<IssueExplainerDatasetItem>(
       "issue-explainer-test-cases",
     );
 
-  // Insert test cases into dataset (Opik automatically deduplicates)
   const datasetItems = issueExplainerTestCases.map((testCase, index) => ({
     name: testCase.name,
     input: testCase.input,
@@ -202,7 +200,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
 
   await dataset.insert(datasetItems);
 
-  // Define the evaluation task
+  
   const evaluationTask: EvaluationTask<IssueExplainerDatasetItem> = async (
     datasetItem,
   ) => {
@@ -211,7 +209,6 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
     const startTime = Date.now();
 
     try {
-      // Run the issue explainer flow
       const output = await issueExplainerFlow(datasetItem.input);
       const durationMs = Date.now() - startTime;
 
@@ -243,7 +240,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
     }
   };
 
-  // Run the evaluation using Opik's evaluate function
+  // run the evaluation using Opik's evaluate function
   const evaluationResult = await evaluate({
     dataset: dataset,
     task: evaluationTask,
@@ -257,7 +254,6 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
       description: "Evaluating issue explainer agent performance",
     },
     scoringKeyMapping: {
-      // Map dataset fields to metric parameters
       expectedBehavior: "expectedBehavior",
       input: "input",
     },
@@ -267,7 +263,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   console.log(`📊 Experiment ID: ${evaluationResult.experimentId}`);
   console.log(`🔗 View results: ${evaluationResult.resultUrl}`);
 
-  // Process results for your existing summary format
+
   const results: EvaluationResult<IssueExplainerJudgeResult>[] = [];
   let totalDurationMs = 0;
 
@@ -277,7 +273,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
       | { durationMs?: number; testName?: string }
       | undefined;
 
-    // Extract scores from the evaluation results
+
     const scores = {
       clarity: scoreResults.find((s) => s.name === "clarity")?.value || 0,
       accuracy: scoreResults.find((s) => s.name === "accuracy")?.value || 0,
@@ -302,7 +298,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
     });
   }
 
-  // Calculate averages
+
   const averageScores = calculateAverageScores(
     results.map((r) => r.scores as unknown as Record<string, string | number>),
   );
@@ -327,7 +323,7 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   };
 }
 
-// Run the evaluation
+
 evaluateIssueExplainer().catch((error) => {
   console.error("Error during issue explainer evaluation:", error);
   process.exit(1);

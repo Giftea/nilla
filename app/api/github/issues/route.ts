@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       perPage: 30,
     });
 
-    // Filter out pull requests (GitHub API returns PRs as issues)
+    // Filter out pull requests
     const filteredIssues = issues.filter(
       (issue) => !("pull_request" in issue)
     );
@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(filteredIssues);
   } catch (error) {
     if (error instanceof GitHubAPIError) {
-      // If 403, it's likely token expiration or rate limiting
       if (error.status === 403) {
         return NextResponse.json(
           { error: "GitHub access denied. Your session may have expired. Please log out and log in again." },

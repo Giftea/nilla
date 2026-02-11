@@ -3,11 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendReminderEmail } from "@/lib/email/resend";
 import { differenceInDays } from "date-fns";
 
-// This endpoint should be called by a Vercel Cron Job daily
-// Add to vercel.json: { "crons": [{ "path": "/api/cron/reminders", "schedule": "0 9 * * *" }] }
 
 export async function GET(request: NextRequest) {
-  // Verify cron secret (optional but recommended)
   const authHeader = request.headers.get("authorization");
   if (
     process.env.CRON_SECRET &&
@@ -19,7 +16,6 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createAdminClient();
 
-    // Fetch active commitments that need reminders
     const { data: commitments, error } = await supabase
       .from("commitments")
       .select(`
@@ -53,9 +49,7 @@ export async function GET(request: NextRequest) {
       results.processed++;
 
       try {
-        // Day 3 reminder (3 days after commitment)
         if (daysSinceCommit >= 3 && !commitment.reminder_day3_sent) {
-          // Get user email from auth.users (requires admin client)
           const { data: authUser } = await supabase.auth.admin.getUserById(
             commitment.user_id
           );
@@ -73,8 +67,6 @@ export async function GET(request: NextRequest) {
               daysRemaining,
               reminderType: "day3",
             });
-
-            // Mark reminder as sent
             await supabase
               .from("commitments")
               .update({ reminder_day3_sent: true })
@@ -84,7 +76,6 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Day 6 reminder (1 day before deadline)
         if (daysRemaining <= 1 && daysRemaining >= 0 && !commitment.reminder_day6_sent) {
           const { data: authUser } = await supabase.auth.admin.getUserById(
             commitment.user_id
@@ -113,7 +104,6 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Mark expired commitments
         if (daysRemaining < 0) {
           await supabase
             .from("commitments")

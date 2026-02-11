@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
     // thumbs_up = 1, thumbs_down = 0
     const score = feedbackType === "thumbs_up" ? 1 : 0;
 
-    // Log feedback to Opik using the batch queue
     opik.traceFeedbackScoresBatchQueue.create({
       id: traceId,
       name: "user_satisfaction",
@@ -49,7 +48,6 @@ export async function POST(request: NextRequest) {
       source: "ui",
     });
 
-    // Flush to ensure feedback is sent
     await flushTraces();
 
     return NextResponse.json({

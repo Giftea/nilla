@@ -17,17 +17,11 @@ import {
   type IssueExplainerJudgeResult,
 } from "../evaluations/judges";
 
-// ============================================
-// CONFIGURATION
-// ============================================
 
 const opik = new Opik();
 const EXPERIMENT_PREFIX = "nilla-eval";
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
-// ============================================
-// RESULT TYPES
-// ============================================
 
 interface EvaluationResult<T> {
   testName: string;
@@ -44,9 +38,6 @@ export interface AgentEvaluationSummary {
   totalDurationMs: number;
 }
 
-// ============================================
-// ISSUE RECOMMENDER EVALUATION
-// ============================================
 
 async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
   console.log("\n" + "=".repeat(60));
@@ -65,7 +56,6 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
     const startTime = Date.now();
 
     try {
-      // Run the agent
       const output = await recommendIssueFlow(testCase.input);
 
       // Judge the output
@@ -192,9 +182,6 @@ async function evaluateIssueRecommender(): Promise<AgentEvaluationSummary> {
   };
 }
 
-// ============================================
-// COMMITMENT COACH EVALUATION
-// ============================================
 
 async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   console.log("\n" + "=".repeat(60));
@@ -213,10 +200,9 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
     const startTime = Date.now();
 
     try {
-      // Run the agent
       const output = await commitmentCoachFlow(testCase.input);
 
-      // Judge the output
+      // judge the output
       const scores = await judgeCoachingQuality(
         testCase.input,
         output,
@@ -225,7 +211,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
 
       const durationMs = Date.now() - startTime;
 
-      // Log to Opik with full input/output for proper evaluation
+      // log to Opik with full input/output for proper evaluation
       const trace = opik.trace({
         name: `eval-commitment-coach-${i + 1}`,
         input: {
@@ -244,7 +230,7 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
         tags: ["evaluation", "commitment-coach", experimentName],
       });
 
-      // Log scores as feedback
+      // logg scores as feedback
       trace.score({
         name: "tone_appropriateness",
         value: scores.toneAppropriateness,
@@ -334,9 +320,6 @@ async function evaluateCommitmentCoach(): Promise<AgentEvaluationSummary> {
   };
 }
 
-// ============================================
-// ISSUE EXPLAINER EVALUATION
-// ============================================
 
 async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   console.log("\n" + "=".repeat(60));
@@ -355,7 +338,6 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
     const startTime = Date.now();
 
     try {
-      // Run the agent
       const output = await issueExplainerFlow(testCase.input);
 
       // Judge the output
@@ -479,9 +461,6 @@ async function evaluateIssueExplainer(): Promise<AgentEvaluationSummary> {
   };
 }
 
-// ============================================
-// MAIN RUNNER
-// ============================================
 
 async function main() {
   console.log("\n");
@@ -496,12 +475,10 @@ async function main() {
 
   const startTime = Date.now();
 
-  // Run all evaluations
   const issueRecResults = await evaluateIssueRecommender();
   const coachResults = await evaluateCommitmentCoach();
   const explainerResults = await evaluateIssueExplainer();
 
-  // Flush all traces to Opik
   await opik.flush();
 
   const totalDuration = Date.now() - startTime;
@@ -547,7 +524,6 @@ async function main() {
   console.log("📈 Check Opik dashboard for detailed traces and metrics.");
   console.log(`   Filter by tag: ${EXPERIMENT_PREFIX}-*-${timestamp}\n`);
 
-  // Return results for programmatic use
   return {
     issueRecommender: issueRecResults,
     commitmentCoach: coachResults,
@@ -557,5 +533,4 @@ async function main() {
   };
 }
 
-// Run the evaluations
 main().catch(console.error);

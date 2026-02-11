@@ -5,40 +5,36 @@ import type { IssueExplainerInput, IssueExplainerOutput } from "@/lib/ai/agents/
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ============================================
-// JUDGE RESULT TYPES
-// ============================================
 
 export interface IssueRecommenderJudgeResult {
-  matchQuality: number; // 1-5: Does the issue fit the user?
-  difficultyCalibration: number; // 1-5: Are difficulty scores accurate?
-  explanationClarity: number; // 1-5: Is the explanation helpful?
-  riskAssessment: number; // 1-5: Is the risk level appropriate?
-  overallScore: number; // 1-5: Overall recommendation quality
+  matchQuality: number; 
+  difficultyCalibration: number; 
+  explanationClarity: number; 
+  riskAssessment: number; 
+  overallScore: number; 
   reasoning: string;
 }
 
 export interface CommitmentCoachJudgeResult {
-  toneAppropriateness: number; // 1-5: Is the tone right for the situation?
-  actionability: number; // 1-5: Is the next action specific and doable?
-  riskAccuracy: number; // 1-5: Is the risk assessment correct?
-  urgencyCalibration: number; // 1-5: Does urgency match the deadline?
-  overallScore: number; // 1-5: Overall coaching quality
+  toneAppropriateness: number; 
+  actionability: number; 
+  riskAccuracy: number; 
+  urgencyCalibration: number; 
+  overallScore: number; 
   reasoning: string;
 }
 
 export interface IssueExplainerJudgeResult {
-  clarity: number; // 1-5: Is the explanation clear?
-  accuracy: number; // 1-5: Is the information accurate?
-  levelAppropriateness: number; // 1-5: Does it match user's experience level?
-  actionability: number; // 1-5: Does it help the user get started?
-  overallScore: number; // 1-5: Overall explanation quality
+  clarity: number; 
+  accuracy: number; 
+  levelAppropriateness: number; 
+  actionability: number; 
+  overallScore: number; 
   reasoning: string;
 }
 
-// ============================================
+
 // ISSUE RECOMMENDER JUDGE
-// ============================================
 
 export async function judgeIssueRecommendation(
   input: RecommendIssueInput,
@@ -135,9 +131,8 @@ Respond with ONLY valid JSON (no markdown code blocks):
   }
 }
 
-// ============================================
+
 // COMMITMENT COACH JUDGE
-// ============================================
 
 export async function judgeCoachingQuality(
   input: CommitmentCoachInput,
@@ -238,9 +233,7 @@ Respond with ONLY valid JSON (no markdown code blocks):
   }
 }
 
-// ============================================
 // ISSUE EXPLAINER JUDGE
-// ============================================
 
 export async function judgeExplanationQuality(
   input: IssueExplainerInput,
@@ -335,18 +328,16 @@ Respond with ONLY valid JSON (no markdown code blocks):
   }
 }
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
+
+// HELPER FUNCTION
 
 function clampScore(score: number): number {
   if (typeof score !== "number" || isNaN(score)) return 3;
   return Math.max(1, Math.min(5, Math.round(score)));
 }
 
-// ============================================
+
 // AGGREGATE SCORING
-// ============================================
 
 export function calculateAverageScores<T extends Record<string, number | string>>(
   results: T[]
